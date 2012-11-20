@@ -48,7 +48,7 @@ class LenSlider {
 
     protected $_requestSettingsURI;
     protected $_requestSkinsURI;
-    protected static $_pluginName  = 'lenslider';
+    protected static $_pluginName  = 'len-slider';
     
     private static $_settingsTitle = 'settings';
     private static $_bannersOption = 'lenslider_banners';
