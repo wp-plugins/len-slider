@@ -2,7 +2,7 @@
 class LenSlider {
     static $settingsOption         = 'lenslider_settings';
     static $postsSliders           = 'lenslider_post_sliders';
-    public $indexPage              = 'lenslider/ls-index.php';
+    public $indexPage              = 'len-slider/ls-index.php';
     public $settingsPage           = 'lenslider-settings-page';
     public $skinsPage              = 'lenslider-skins-page';
     public $indexFile;
