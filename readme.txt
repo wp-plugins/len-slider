@@ -86,13 +86,13 @@ Yes, this is right. Activate the slider with help of radiobuttons and save the d
 
 = What does "maximum width of uploaded image, px" mean? =
 
-Each banner of the slider has some image/photo and it has maximal (recommended) width in pixels (usually on websites width dominates over height). This figure limits the width of the image that you download, i.e. if the image is wider, then it will be automatically resized to the required width with preserved ratio. In case the width is equal to the maximal possible parameter or smaller than that, then the image will not change. One can set any figure in the range 30-120 pixels.
+Each banner of the slider has some image/photo and it has maximal (recommended) width in pixels (usually on websites width dominates over height). This figure limits the width of the image that you download, i.e. if the image is wider, then it will be automatically resized to the required width with preserved ratio. In case the width is equal to the maximal possible parameter or smaller than that, then the image will not change. One can set any figure in the range 30-1200 pixels.
 
 = How can I insert necessary slider with shortcode if I do not remember its hash-number? =
 
 If you have installed plugin, then the button LenSlider should appear in the admin panel in the section of adding new post/page/custom post type in the bar WYSIWYG of the editor. Press this button and you will understand how it works.
 
-= What does "Maximal quality of uploaded image" mean?=
+= What does "Maximal quality of uploaded image" mean? =
 
 The default parameter is 90. That means that the image that you download will lose in quality a little, but its weight in kilobytes will be lower and this will increase download speed of a page with a slider. In other words, this is a small contribution to download speed in client’s area. You can change this figure from 60 to 100.
 
