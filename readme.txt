@@ -68,7 +68,6 @@ or by Shortcode button:
 * Widget support
 * HTML-editor support
 * Some wonderful but secret yet plans
-* if you have idea(s) to improve LenSlider, you are welcome to [suggest your idea](http://www.lenslider.com/suggest-idea/)
 
 == Installation ==
 
