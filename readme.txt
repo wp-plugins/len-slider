@@ -41,7 +41,7 @@ LenSlider is a WordPress plugin for creation of visual sliders, carousels or sli
 PHP-code:
 `<?php if( class_exists( 'LenSlider' ) ) {LenSlider::lenslider_output_slider( $id );} ?>`
 or
-`vif( class_exists( 'LenSlider' ) ) {echo LenSlider::lenslider_output_slider( $id, false );} ?>`
+`<?php if( class_exists( 'LenSlider' ) ) {echo LenSlider::lenslider_output_slider( $id, false );} ?>`
 or by Shortcode button:
 `[lenslider id=""]`
 
