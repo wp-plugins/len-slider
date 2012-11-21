@@ -71,10 +71,10 @@ or by Shortcode button:
 
 == Installation ==
 
-1. Search for "Len Slider" in the Add New Plugin section of your WordPress site admin panel or manually upload the `lenslider` folder (unziped) to the `/wp-content/plugins/` directory
+1. Search for "Len Slider" in the Add New Plugin section of your WordPress site admin panel or manually upload the `len-slider` folder (unziped) to the `/wp-content/plugins/` directory
 2. Activate the plugin
 3. Create Sliders under the new **LenSlider** Menu
-4. Use the shortcode `[lenslider]` (shortode button is already installed on your WYSIWYG bar) in the content area of a page or post where you want the image slider to appear or PHP code `<?php if( class_exists( 'LenSlider' ) ) {LenSlider::lenslider_output_slider( $id );}?>` in your template files
+4. Use the shortcode `[lenslider]` (shortode button is already installed on your WYSIWYG bar) in the content area of a page or post where you want the image slider to appear or PHP code `<?php if( class_exists( 'LenSlider' ) ) {LenSlider::lenslider_output_slider( 'your slider hash ID here - with lower(!) case letters' );}?>` in your template files
 5. Enjoy!
 
 
