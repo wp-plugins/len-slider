@@ -254,14 +254,14 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
         $thisarr      = $(this).attr('id').replace(/mbgdel_/, '').split("_"),
         $this_id      = $thisarr[0],
         $thumb_id     = $thisarr[1],
-        $slidernum    = $thisarr[2],
-        $post_id      = $thisarr[3];
+        $slidernum    = $thisarr[2];
+        //$post_id      = $thisarr[3];
         $(".c_del, .c_thdel").hide();
         if($delThumb && $thumb_id) {
             $("#overlay_"+$thumb_id).show();
             setTimeout(function () {
                 $.post(ajaxServerURL,
-                    {attachment_id:$this_id, thumb_del:$delThumb, thumb_id:$thumb_id, slidernum:$slidernum, post_id:$post_id, act:'del_image'},
+                    {attachment_id:$this_id, thumb_del:$delThumb, thumb_id:$thumb_id, slidernum:$slidernum/*, post_id:$post_id*/, act:'del_image'},
                     function(data) {
                         if(data.del_ret == true) {
                             $(".c_del, .c_thdel").show();
@@ -287,13 +287,13 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
             var $thisarr = $(this).attr('id').replace(/mbgthdel_/, '').split("_"),
             $this_id     = $thisarr[0],
             $thumb_id    = $thisarr[1],
-            $slidernum   = $thisarr[2],
-            $post_id     = $thisarr[3];
+            $slidernum   = $thisarr[2];
+            //$post_id     = $thisarr[3];
             $(".c_del, .c_thdel").hide();
             $("#overlay_"+$thumb_id).show();
             setTimeout(function () {
                 $.post(ajaxServerURL,
-                    {attachment_id:$this_id, thumb_id:$thumb_id, slidernum:$slidernum, post_id:$post_id, act:'del_thumb'},
+                    {attachment_id:$this_id, thumb_id:$thumb_id, slidernum:$slidernum/*, post_id:$post_id*/, act:'del_thumb'},
                     function(data) {
                         if(data.del_ret == true) {
                             $(".c_del, .c_thdel").show();
