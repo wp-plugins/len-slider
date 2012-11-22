@@ -893,7 +893,7 @@ class LenSlider {
         return $ret_array;
     }
 
-    public function lenslider_banners_processing($sliderarray, $checkBannerArray, $file, $file_thumb, $array, $settings_post_array = false) {//die(var_dump($array["374e210e94"]['ls_link']));
+    public function lenslider_banners_processing($sliderarray, $checkBannerArray, $file, $file_thumb, $array, $settings_post_array = false) {
         $ret_array    = array();
         if(isset($sliderarray) && is_array($sliderarray)) {
             foreach (array_keys($sliderarray) as $slider_k) {
@@ -1067,7 +1067,7 @@ class LenSlider {
                 );
                 if(!empty($ret_array[$slider_k])) $ret_array[$slider_k][self::$_settingsTitle] = $slider_settings_array;
             }
-        }//die(var_dump($ret_array));
+        }
         $this->_lenslider_update_lenslider_option(self::$_bannersOption, $ret_array, $this->_requestIndexURI);
     }
     
@@ -1320,7 +1320,7 @@ class LenSlider {
             $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
             if(!empty($sliders_array[$slidernum]) && is_array($sliders_array[$slidernum])) {
                 $n=0;
-                foreach ($sliders_array[$slidernum] as /*banner_key*/$k=>$banner_array) {//if($n==1) die(var_dump($this->_lenslider_make_default_fields_array($banner_array)));
+                foreach ($sliders_array[$slidernum] as /*banner_key*/$k=>$banner_array) {
                     if($k != self::$_settingsTitle) {
                         if($skinObj) {
                             $array_merge  = LenSliderSkins::_lenslider_skin_merge_array($skinObj->bannerMergeArray, $banner_array);
