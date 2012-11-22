@@ -101,7 +101,7 @@ class LenSlider {
         add_action('admin_init',          array(&$this, 'lenslider_scripts_init'));
         add_action('admin_menu',          array(&$this, 'lenslider_menu_add'));
         add_action('admin_head',          array(&$this, 'lenslider_admin_head'));
-        add_action('wp_head',             array(&$this, 'lenslider_make_skins_files_wp_head'));
+        add_action('init',             array(&$this, 'lenslider_make_skins_files_wp_head'));
         add_action('wp_footer',           array(&$this, 'lenslider_footer_link'));
         add_action('save_post',           array(&$this, 'lenslider_save_postdata'));
         add_action('save_post',           array(&$this, 'lenslider_check_post_url_update'));
@@ -325,7 +325,7 @@ class LenSlider {
                     if(!empty($skinObjStatic->jsFiles) && is_array($skinObjStatic->jsFiles)) {
                         foreach ($skinObjStatic->jsFiles as $filename) {
                             $reg_name = $reg_name = str_ireplace(".js", '', basename($filename)."-{$skin_name}");
-                            wp_register_script($reg_name, str_ireplace(ABSPATH, self::$siteurl."/", $filename), array(), false, true);
+                            wp_register_script($reg_name, str_ireplace(ABSPATH, self::$siteurl."/", $filename), array('jquery', 'jquery-ui-core', 'jquery-ui-tabs'), false, true);
                             wp_enqueue_script($reg_name);
                         }
                     }
