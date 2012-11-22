@@ -124,15 +124,16 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
         $slidernum   = $pre_info[1],
         $n           = $pre_info[2],
         $banner_k    = $pre_info[3];
+        console.debug("tolist="+$to_list+" name="+$name+" slidernum="+$slidernum+" n="+$n+" banner_k="+$banner_k);
         $("#blink_append_"+$slidernum+"_"+$n).html('');
-        if($to_list != 'blink_url') {
+        if($to_list != 'blink_lsurl') {
             $("#blink_append_"+$slidernum+"_"+$n).addClass('bload2');
             $("#ls_link_"+$slidernum+"_"+$n).attr("disabled", "disabled");
-        }
+        } else $("#ls_link_"+$slidernum+"_"+$n).removeAttr("disabled");
         $.post(ajaxServerURL,
             {slidernum:$slidernum,name:$name,n:$n,banner_k:$banner_k,to_list:$to_list,act:'links_variants'},
             function(data) {
-                if($to_list != 'blink_url') {
+                if($to_list != 'blink_lsurl') {
                     $("#blink_append_"+$slidernum+"_"+$n).removeClass('bload2');
                     if(data.ret != '') $("#blink_append_"+$slidernum+"_"+$n).html(data.ret);
                     else $("#blink_append_"+$slidernum+"_"+$n).html('');
@@ -419,6 +420,7 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
             function(data) {
                 if(count_banners <= data.banners_limit && data.banner_item != false) {
                     if(removeEl) removeEl.removeClass("bload");
+                    //console.debug(data.banner_item);
                     $('#slidernum_'+slidernum).append($(data.banner_item).fadeIn('slow'));
                     scrollToAnchor('anchor_'+slidernum+count_banners);
                 } else if(removeEl) removeEl.removeClass("bload");
