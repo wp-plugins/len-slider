@@ -14,6 +14,7 @@ if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
             $array_merge                = ($skinObj)?$skinObj->bannerMergeArray:false;
             $array_unset                = ($skinObj)?$skinObj->bannerUnsetArray:false;
             $ret_array['banner_item']   = $ls->lenslider_banner_item($n, $slidernum, $ret_array['banners_limit'], $array_merge, $array_unset, $slider_settings['ls_has_thumb']);
+            //$ret_array['n'] = $n;
             break;
         case 'add_slider':
             $n_sliders                  = intval($_POST['count_sliders']);
@@ -109,7 +110,7 @@ if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
                     break;
                 default :
                     $ret_array['ret'] = '';
-                    $ret_array['uth'] = LenSlider::lenslider_banner_hidden($slidernum, 'url_type', 'lsurl');
+                    $ret_array['uth'] = LenSlider::lenslider_banner_hidden($slidernum, 'url_type', 'ls_simple');
             }
             break;
         
