@@ -618,10 +618,12 @@ class LenSlider {
     public static function lenslider_get_slider_skin_object($skin_name, $require = true) {
         if($skin_name != self::$defaultSkin) {
             $require_path = LenSliderSkins::_lenslider_skins_abspath()."/{$skin_name}/lib/{$skin_name}.skin.class.php";
+            if(!file_exists($require_path)) $require_path = LenSliderSkins::_lenslider_skins_custom_abspath()."/{$skin_name}/lib/{$skin_name}.skin.class.php";
             if(file_exists($require_path)) {
-                if($require) require_once(LenSliderSkins::_lenslider_skins_abspath()."/{$skin_name}/lib/{$skin_name}.skin.class.php");
+                if($require) require_once($require_path);
                 $class = ucfirst($skin_name)."LenSliderSkin";
-                return new $class;
+                if(class_exists($class)) return new $class;
+                return false;
             }
             return false;
         }
@@ -1383,8 +1385,13 @@ class LenSlider {
             $slider_banners = self::lenslider_get_slider_banners($slidernum);
             if(file_exists(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html")) {
                 $file_text = ($skin_name != self::$defaultSkin)?file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html"):file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/default.html");
+            } elseif(file_exists(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html")) {
+                $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html");
             } else {
-                $file_text = ($skin_name != self::$defaultSkin)?file_get_contents(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html"):file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/default.html");
+                if($echo) {
+                    echo '';
+                    return;
+                } else return '';
             }
             if(!empty($file_text)) {
                 if(!empty($slider_banners) && is_array($slider_banners)) {
