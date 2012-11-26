@@ -124,7 +124,7 @@ First version
 = 1.0.1 =
 Fixed much of bugs:
 - Double links
-- `default` skin link replaced
+- default skin link replaced
 - some js admin errors
 
 = 1.1 =
