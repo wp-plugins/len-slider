@@ -27,7 +27,7 @@ function lenslider_skins_page() {
                 <div id="post-body-content" class="has-sidebar-content">
                     <h2><?php printf(__("LenSlider v%s skins", 'lenslider'), LenSliderSkins::$version);?></h2>
                     <div class="postbox" style="padding:10px;">
-                        <form id="ls_slins_submit" action="<?=admin_url("admin.php?page={$ls_skins->skinsPage}&noheader=true")?>" method="post" enctype="multipart/form-data">
+                        <form id="ls_slins_submit" action="<?php echo admin_url("admin.php?page={$ls_skins->skinsPage}&noheader=true")?>" method="post" enctype="multipart/form-data">
                         <table border="0" width="100%">
                             <tr>
                                 <td width="70%">

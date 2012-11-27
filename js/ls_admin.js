@@ -1,4 +1,4 @@
-var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, confirmText, confirmThumbText, noSkinsText, sliderComment, errTitle, errGeneral, maximizeStr, minimizeStr, skinSettingsConfirmStr, sliderErrStr, bannerErrStr) {
+var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, confirmText, confirmThumbText, noSkinsText, sliderComment, errTitle, errGeneral, maximizeStr, minimizeStr, skinSettingsConfirmStr, allowedUrlsArr, sliderErrStr, bannerErrStr) {
     if(isPluginPage) {
         if($("#ls_save_metabox").length) {
             var needleTop = ($("#ls_save_metabox").offset().top) - parseInt($("#wpadminbar").css('height')) - 10;
@@ -31,9 +31,9 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
     }
     
     var minLength = 3;
-    $(".ls_slide_image_inner_controls ul li a").css({'opacity': .6});
-    $(".ls_abs_size").css({'opacity': .5});
-    $(".ls_banner_close, .ps_del").css({'opacity': .7});
+    $(".ls_slide_image_inner_controls ul li a").css({'opacity':.6});
+    $(".ls_abs_size").css({'opacity':.5});
+    $(".ls_banner_close, .ps_del").css({'opacity':.7});
     $(".ls_slide_image_inner_overlay").hide();
     //$("#post").attr("enctype", "multipart/form-data");
     $(".ls_bbutton").mouseup(function(){$(this).removeClass('push')}).mousedown(function(){$(this).addClass('push');});
@@ -96,8 +96,8 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
     );
     
     $(".ls_banner_close, .ps_del").hover(
-        function() {$(this).css({'opacity': 1});},
-        function() {$(this).css({'opacity': .6});}
+        function() {$(this).css({'opacity':1});},
+        function() {$(this).css({'opacity':.6});}
     );
     
     $(".ls_slide_image_inner").hover(
@@ -125,14 +125,14 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
         $n           = $pre_info[2],
         $banner_k    = $pre_info[3];
         $("#blink_append_"+$slidernum+"_"+$n).html('');
-        if($to_list != 'blink_url') {
+        if($to_list != 'blink_lsurl') {
             $("#blink_append_"+$slidernum+"_"+$n).addClass('bload2');
             $("#ls_link_"+$slidernum+"_"+$n).attr("disabled", "disabled");
-        }
+        } else $("#ls_link_"+$slidernum+"_"+$n).removeAttr("disabled");
         $.post(ajaxServerURL,
             {slidernum:$slidernum,name:$name,n:$n,banner_k:$banner_k,to_list:$to_list,act:'links_variants'},
             function(data) {
-                if($to_list != 'blink_url') {
+                if($to_list != 'blink_lsurl') {
                     $("#blink_append_"+$slidernum+"_"+$n).removeClass('bload2');
                     if(data.ret != '') $("#blink_append_"+$slidernum+"_"+$n).html(data.ret);
                     else $("#blink_append_"+$slidernum+"_"+$n).html('');
@@ -141,6 +141,7 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
                     $("#post_hidden_uth_ls_link_"+$slidernum+"_"+$n).html(data.uth);
                     $("#post_hidden_ls_link_"+$slidernum+"_"+$n).html('');
                     $("#ls_link_"+$slidernum+"_"+$n).removeAttr("disabled").attr('name', 'binfo['+$slidernum+'][ls_link][]');
+                    $("#url_type_id_"+$slidernum+"_"+$n).find('input').val('');
                 }
             }, "json"
         );
@@ -254,14 +255,15 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
         $thisarr      = $(this).attr('id').replace(/mbgdel_/, '').split("_"),
         $this_id      = $thisarr[0],
         $thumb_id     = $thisarr[1],
-        $slidernum    = $thisarr[2],
-        $post_id      = $thisarr[3];
+        $slidernum    = $thisarr[2];
+        //$post_id      = $thisarr[3];
         $(".c_del, .c_thdel").hide();
-        if($delThumb && $thumb_id) {
-            $("#overlay_"+$thumb_id).show();
+        if($delThumb) {
+            $("#overlay_"+$this_id).show();
+            if($thumb_id) $("#overlay_"+$thumb_id).show();
             setTimeout(function () {
                 $.post(ajaxServerURL,
-                    {attachment_id:$this_id, thumb_del:$delThumb, thumb_id:$thumb_id, slidernum:$slidernum, post_id:$post_id, act:'del_image'},
+                    {attachment_id:$this_id, thumb_del:$delThumb, thumb_id:$thumb_id, slidernum:$slidernum/*, post_id:$post_id*/, act:'del_image'},
                     function(data) {
                         if(data.del_ret == true) {
                             $(".c_del, .c_thdel").show();
@@ -287,13 +289,13 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
             var $thisarr = $(this).attr('id').replace(/mbgthdel_/, '').split("_"),
             $this_id     = $thisarr[0],
             $thumb_id    = $thisarr[1],
-            $slidernum   = $thisarr[2],
-            $post_id     = $thisarr[3];
+            $slidernum   = $thisarr[2];
+            //$post_id     = $thisarr[3];
             $(".c_del, .c_thdel").hide();
             $("#overlay_"+$thumb_id).show();
             setTimeout(function () {
                 $.post(ajaxServerURL,
-                    {attachment_id:$this_id, thumb_id:$thumb_id, slidernum:$slidernum, post_id:$post_id, act:'del_thumb'},
+                    {attachment_id:$this_id, thumb_id:$thumb_id, slidernum:$slidernum/*, post_id:$post_id*/, act:'del_thumb'},
                     function(data) {
                         if(data.del_ret == true) {
                             $(".c_del, .c_thdel").show();
@@ -345,7 +347,9 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
     
     //Ajax added slider form delete
     $(".slremove").live('click', function() {
+        var $sliders_length = ($(".ls_metabox").length)-1;
         $(this).parents(".ls_metabox").remove();
+        if($sliders_length <= 0) addSliderAjax(0);
         return false;
     });
     
@@ -354,7 +358,6 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
             {count_sliders:count_sliders, skin_name:skin_name, act:'add_slider'},
             function(data) {
                 if(count_sliders <= data.sliders_limit && data.slider_item != false) {
-                    //console.debug(data.slider_item);
                     if(removeEl) removeEl.removeClass("bload");
                     $('#lensliders').append($(data.slider_item).fadeIn('slow'));
                     scrollToAnchor('slider_metabox_'+count_sliders);
@@ -366,13 +369,16 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
     //Delete slider
     $(".slajaxdel").live('click', function() {
         if(confirm(confirmText)) {
-            var $sliders_length = $(".ls_metabox").length;
-            var $slidernum = $(this).attr("id").replace(/delslider_/, '');
+            var $sliders_length = $(".ls_metabox").length,
+            $slidernum = $(this).attr("id").replace(/delslider_/, '');
             $.post(ajaxServerURL,
                 {slidernum:$slidernum, act:'del_slider'},
                 function(data) {
                     if(data.del_ret == true) {
                         $(".slnum_"+$slidernum).fadeTo(2000, 0, function() {
+                            $(this).remove();
+                        });
+                        $("#sliders_nav_li_"+$slidernum).fadeTo(2000, 0, function() {
                             $(this).remove();
                         });
                         jDelCookie('folding_'+$slidernum);
@@ -435,17 +441,11 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
             //var $slidernum = $(this).attr('id').split("_")[2];
             //var $bannernum = parseInt($(this).attr('id').split("_")[3])+1;
             $(this).removeClass('txt_error');
-            var this_val = $(this).val();
+            var this_val = $(this).val().toString();
             //$errors[$slidernum] = new Object();
             //$errors[$slidernum][$bannernum] = new Object();
             //$errors[$slidernum][$bannernum][$i] = new Array();
             //var $n=0;
-            var $name = $(this).attr("id").split('_')[1];
-            if($name == 'link' && !isValidUrl(this_val)) {
-                $(this).addClass('txt_error');
-                //$errors[$slidernum][$bannernum][$i][$n] = "Field #"+$name+" did not pass validation<br />";
-                //$n++;
-            }
             if(this_val == '') {
                 $(this).addClass('txt_error');
                 //$errors[$slidernum][$bannernum][$i][$n] = "Field #"+$name+" is empty<br />";
@@ -454,6 +454,13 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
             if(this_val.length < minLength) {
                 $(this).addClass('txt_error');
                 //$errors[$slidernum][$bannernum][$i][$n] = "Value of field #"+$name+" less than "+minLength+"<br />";
+                //$n++;
+            }
+            var $name = $(this).attr("id").split('_')[1];
+            if($name == 'link') {
+                if(!isValidUrl(this_val)) $(this).addClass('txt_error');
+                else $(this).removeClass('txt_error');
+                //$errors[$slidernum][$bannernum][$i][$n] = "Field #"+$name+" did not pass validation<br />";
                 //$n++;
             }
             //$i++;
@@ -542,9 +549,9 @@ var lenSliderJSReady = function($, ajaxServerURL, tipsy_check, isPluginPage, con
     });
     
     var isValidUrl = function(data) {
-        var pattern = new RegExp(/^((http|https):\/\/)?([a-z0-9\-]+\.)?[a-z0-9\-]+\.[a-z0-9]{2,4}(\.[a-z0-9]{2,4})?(\/.*)?$/i);
-        if(!pattern.test(data)) return false;
-        return true;
+        var pattern = new RegExp(/^((http|https):\/\/)?([a-z0-9\-]+\.)?([a-z0-9\-]+\.)?[a-z0-9\-]+\.[a-z0-9]{2,4}(\.[a-z0-9]{2,4})?(\/.*)?$/i);
+        if(pattern.test(data) || ($.inArray(data, allowedUrlsArr)) > -1) return true;
+        return false;
     };
     
     var jDelCookie = function(cookieName) {
