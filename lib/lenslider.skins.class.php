@@ -130,19 +130,19 @@ class LenSliderSkins extends LenSlider {
                                                     $skin_logo_abs = self::_lenslider_skins_abspath()."/{$skin}"."/images/logo.jpg";
                                                     if(!file_exists($skin_logo_abs)) $skin_logo_abs = self::_lenslider_skins_custom_abspath()."/{$skin}"."/images/logo.jpg";
                                                     if(file_exists($skin_logo_abs)) {?>
-                                                    <img class="ls_rounded" width="100" src="<?=str_ireplace(ABSPATH, LenSlider::$siteurl."/", $skin_logo_abs);?>" />
+                                                    <img class="ls_rounded" width="100" src="<?php echo str_ireplace(ABSPATH, LenSlider::$siteurl."/", $skin_logo_abs);?>" />
                                                     <?php }?>
                                                 </td>
                                                 <td valign="top">
                                                     <div style="position:relative;padding-bottom:10px;">
-                                                        <span class="title"><?=$xml_obj->name?></span>
-                                                        <?php if(!empty($xml_obj->description)) {?><p><?=$xml_obj->description?></p><?php }?>
-                                                        <p><?php _e("Skin files location:", 'lenslider')?> <code><?="/".self::$_skinsCatalog."/{$skin}/"?></code></p>
-                                                        <!--div class="ls_meta_data"><?php _e("Date:", 'lenslider')?> <?=$xml_obj->date?> | <?php _e("Author:", 'lenslider')?> <?=$xml_obj->author?> | <?php _e("Version:", 'lenslider')?> <?=$xml_obj->version?> | <?php _e("url:", 'lenslider')?> <a href="<?=esc_url($xml_obj->url)?>" target="_blank"><?=$xml_obj->urltitle?></a></div-->
+                                                        <span class="title"><?php echo $xml_obj->name?></span>
+                                                        <?php if(!empty($xml_obj->description)) {?><p><?php echo $xml_obj->description?></p><?php }?>
+                                                        <p><?php _e("Skin files location:", 'lenslider')?> <code><?php echo "/".self::$_skinsCatalog."/{$skin}/"?></code></p>
+                                                        <!--div class="ls_meta_data"><?php _e("Date:", 'lenslider')?> <?php echo $xml_obj->date?> | <?php _e("Author:", 'lenslider')?> <?php echo $xml_obj->author?> | <?php _e("Version:", 'lenslider')?> <?php echo $xml_obj->version?> | <?php _e("url:", 'lenslider')?> <a href="<?php echo esc_url($xml_obj->url)?>" target="_blank"><?php echo $xml_obj->urltitle?></a></div-->
                                                         <div class="ls_theme_min_buttons">
                                                             <ul>
                                                                 <!--li><a class="ls_min_a ls_rounded_small" href="#"><?php _e("view", 'lenslider')?></a></li-->
-                                                                <li><a class="ls_min_a ls_min_a_del ls_rounded_small<?php if(!$is_used) echo " skin_allow_delete";?>" id="skin_<?=$skin?>" href="<?php echo (!$is_used)?"javascript:;":"javascript:alert(&quot;".__("You couldn't delete uses skin!", 'lenslider')."&quot;);";?>"><?php _e("Delete", 'lenslider')?></a></li>
+                                                                <li><a class="ls_min_a ls_min_a_del ls_rounded_small<?php if(!$is_used) echo " skin_allow_delete";?>" id="skin_<?php echo $skin?>" href="<?php echo (!$is_used)?"javascript:;":"javascript:alert(&quot;".__("You couldn't delete uses skin!", 'lenslider')."&quot;);";?>"><?php _e("Delete", 'lenslider')?></a></li>
                                                             </ul><div class="clear"></div>
                                                         </div>
                                                     </div>

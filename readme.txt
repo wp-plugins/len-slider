@@ -3,7 +3,7 @@ Contributors: tigusigalpa
 Tags: slider, carousel, slideshow, banners, video slider, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.3
 Tested up to: 3.4.2
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,8 +122,7 @@ If you switch on this option hints in the admin LenSlider will be shown in nice 
 First version
 
 = 1.0.1 =
-Fixed much of bugs:
-- Double links
+- Double links fix
 - default skin link replaced
 - some js admin errors
 
@@ -137,3 +136,6 @@ Fixed much of bugs:
 
 = 1.1.1 =
 - Even uppercase letters for slider hash
+
+= 1.1.2 =
+- support for PHP without short tags support
