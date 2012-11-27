@@ -23,7 +23,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '1.1.1';
+    static $version                = '1.1.2';
     static $maxWidthName           = 'ls_images_maxwidth';
     static $maxSizeName            = 'ls_images_maxsize';
     static $slidersLimitName       = 'ls_sliders_limit';
