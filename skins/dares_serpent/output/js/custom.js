@@ -40,7 +40,7 @@ Slider.prototype.transition = function( coords ) {
         800,
         function() {
 
-            $(this).css('margin-left', -(self.blockWidth * (self.blocksLen - 2) ));
+            jQuery(this).css('margin-left', -(self.blockWidth * (self.blocksLen - 2) ));
         });
 
         this.current = this.blocksLen - 2;        
