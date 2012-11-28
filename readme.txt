@@ -3,7 +3,7 @@ Contributors: tigusigalpa
 Tags: slider, carousel, slideshow, banners, video slider, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.3
 Tested up to: 3.4.2
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,3 +139,6 @@ First version
 
 = 1.1.2 =
 - support for PHP without short tags support
+
+= 1.1.3 =
+- fix for default skin

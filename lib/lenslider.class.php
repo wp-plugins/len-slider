@@ -23,7 +23,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '1.1.2';
+    static $version                = '1.1.3';
     static $maxWidthName           = 'ls_images_maxwidth';
     static $maxSizeName            = 'ls_images_maxsize';
     static $slidersLimitName       = 'ls_sliders_limit';
@@ -955,7 +955,7 @@ class LenSlider {
                     $has_thumb     = (!empty($settings_post_array[$slider_k][self::$hasThumb])       && $settings_post_array[$slider_k][self::$hasThumb] == 'on')?1:0;
                     $maxthumbwidth = (!empty($settings_post_array[$slider_k][self::$thumbMaxWidth]))   ?$settings_post_array[$slider_k][self::$thumbMaxWidth]   :$this->thumbWidthMAX;
                     if(!LenSliderSkins::_lenslider_skin_exists($skin_name)) $skin_name = self::$defaultSkin;
-                    //if(!empty($slider_settings_array)/* && $slider_settings_array[self::$skinName] != $skin_name*/) $disen = 0;
+                    if(!empty($slider_settings_array) && $slider_settings_array[self::$skinName] != $skin_name) $disen = 0;
                     if(array_key_exists("ls_link", $array[$slider_k]) && $this->lenslider_is_valid_url($array[$slider_k]["ls_link"][$banner_k])) {
                         if(!empty($file['tmp_name'][$slider_k][$banner_k])) {
                             $afile              = array();
@@ -1384,14 +1384,17 @@ class LenSlider {
             $skin_name      = self::_lenslider_get_slider_skin_name($slidernum);
             $slider_banners = self::lenslider_get_slider_banners($slidernum);
             if(file_exists(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html")) {
-                $file_text = ($skin_name != self::$defaultSkin)?file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html"):file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/default.html");
+                $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html");
             } elseif(file_exists(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html")) {
                 $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html");
             } else {
-                if($echo) {
-                    echo '';
-                    return;
-                } else return '';
+                if($skin_name == self::$defaultSkin) $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/default.html");
+                else {
+                    if($echo) {
+                        echo '';
+                        return;
+                    } else return '';
+                }
             }
             if(!empty($file_text)) {
                 if(!empty($slider_banners) && is_array($slider_banners)) {
