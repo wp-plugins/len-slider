@@ -2,8 +2,8 @@
 Contributors: tigusigalpa
 Tags: slider, carousel, slideshow, banners, video slider, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.3
-Tested up to: 3.4.2
-Stable tag: 1.1.3
+Tested up to: 3.5
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,7 @@ or by Shortcode button:
 * Uses [jQuery One Page Nav Plugin](http://github.com/davist11/jQuery-One-Page-Nav)
 * Uses [jQuery scrollTo](http://flesler.blogspot.com/2007/10/jqueryscrollto.html) as a part of `One Page Nav`
 * Uses [jQuery Alert Dialogs Plugin](http://www.abeautifulsite.net/blog/2008/12/jquery-alert-dialogs/)
+* Uses [jQuery UI Tabs Rotate for jQuery UI 1.9+](https://github.com/cmcculloh/jQuery-UI-Tabs-Rotate)
 
 **Immediate plans to improve the plugin (sorry, author didnt have enough time yet):**
 
@@ -142,3 +143,10 @@ First version
 
 = 1.1.3 =
 - fix for default skin
+
+= 1.2 =
+- js call admin fuction fix
+- init scripts fix
+- new skin `Nemo Target`
+- WordPress 3.5+ ready for sliders autorotate
+- dropdown posts fix

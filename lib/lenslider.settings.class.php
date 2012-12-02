@@ -8,7 +8,7 @@ class LenSliderSettings extends LenSlider {
 
     public static function lenslider_make_settings_array($array, $limits_array, $limits_mins_array = null, $array_keys_to_unset = null, $not_int_array = null) {
         $preventArray = array(
-            __('slider comment', 'lenslider')
+            __('slider comment', 'len-slider')
         );
         $canZeroArray = array(
             LenSlider::$hasThumb

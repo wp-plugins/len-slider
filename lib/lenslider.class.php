@@ -23,7 +23,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '1.1.3';
+    static $version                = '1.2';
     static $maxWidthName           = 'ls_images_maxwidth';
     static $maxSizeName            = 'ls_images_maxsize';
     static $slidersLimitName       = 'ls_sliders_limit';
@@ -49,6 +49,8 @@ class LenSlider {
     protected $_requestSettingsURI;
     protected $_requestSkinsURI;
     protected static $_pluginName  = 'len-slider';
+    protected static $_requiredJSHandles;
+    protected static $_requiredAdminJSHandles;
     
     private static $_settingsTitle = 'settings';
     private static $_bannersOption = 'lenslider_banners';
@@ -60,7 +62,9 @@ class LenSlider {
     private $_tipsy;
     private $_plugin_basename;
     private $_requestIndexURI;
-    
+    private $_enabledSliders;
+    private $_sliders_array;
+
     public function __construct() {
         $options_array             = self::lenslider_get_array_from_wp_options(self::$settingsOption);
         $this->imageFileSizeMAX    = intval(ini_get('upload_max_filesize'));
@@ -69,6 +73,8 @@ class LenSlider {
         $this->bannersLimit        = (!empty($options_array[self::$bannersLimitName]))?$options_array[self::$bannersLimitName]:$this->bannersLimitDefault;
         $this->imageQuality        = (!empty($options_array[self::$qualityName]))     ?$options_array[self::$qualityName]     :$this->imageQualityMAX;
         $this->_tipsy              = (!empty($options_array[self::$tipsyName]))       ?$options_array[self::$tipsyName]       :0;
+        $this->_enabledSliders     = self::_lenslider_get_enabled_sliders_array_slidernums();
+        $this->_sliders_array      = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
         self::$_settingsDefault    = array(
                                         self::$slidersLimitName => $this->slidersLimitDefault,
                                         self::$bannersLimitName => $this->bannersLimitDefault,
@@ -84,9 +90,11 @@ class LenSlider {
                                         self::$sliderRandom     => 0,
                                         $this->_tipsy           => $this->tipsyDefault
                                     );
-        self::$skin_change_note       = __("NOTE: After you change the skin for the slider and update the data, slider will be resaved as disabled. Then you’ll be able to change its status on your own to enable it and then update the data.", 'lenslider');
+        self::$skin_change_note       = __("NOTE: After you change the skin for the slider and update the data, slider will be resaved as disabled. Then you’ll be able to change its status on your own to enable it and then update the data.", 'len-slider');
         
         self::$siteurl             = site_url();
+        self::$_requiredJSHandles  = array('jquery', 'jquery-ui-core', 'jquery-ui-tabs');
+        self::$_requiredAdminJSHandles = array('jquery', 'jquery-ui-core', 'jquery-ui-sortable', 'thickbox');
         $this->_requestIndexURI    = admin_url("admin.php?page={$this->indexPage}");
         $this->indexFile           = ABSPATH.PLUGINDIR."/".$this->indexPage;  
         $this->_requestSettingsURI = admin_url("admin.php?page={$this->settingsPage}");
@@ -101,7 +109,7 @@ class LenSlider {
         add_action('admin_init',          array(&$this, 'lenslider_scripts_init'));
         add_action('admin_menu',          array(&$this, 'lenslider_menu_add'));
         add_action('admin_head',          array(&$this, 'lenslider_admin_head'));
-        add_action('init',                array(&$this, 'lenslider_make_skins_files_wp_head'));
+        add_action('wp_enqueue_scripts',  array(&$this, 'lenslider_make_skins_files_wp_head'), 9999);
         add_action('wp_footer',           array(&$this, 'lenslider_footer_link'));
         add_action('save_post',           array(&$this, 'lenslider_save_postdata'));
         add_action('save_post',           array(&$this, 'lenslider_check_post_url_update'));
@@ -120,7 +128,7 @@ class LenSlider {
         $role = get_role('administrator');
         $role->add_cap(self::$_capability);
         $this->_leslider_check_unused_skins_to_default();
-        $skins_custom_catalog = WP_CONTENT_DIR."/".LenSliderSkins::$skinsCustomCatalog;
+        $skins_custom_catalog = LenSliderSkins::_lenslider_skins_custom_abspath();
         if(!file_exists($skins_custom_catalog)) wp_mkdir_p($skins_custom_catalog);
     }
 
@@ -133,43 +141,44 @@ class LenSlider {
     public static function lenslider_plugin_uninstall() {
         $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
         if(!empty($sliders_array) && is_array($sliders_array)) {
-            foreach (array_keys($sliders_array) as $slider_k) {self::_lenslider_delete_slider_banners_ids($slider_k, $sliders_array);}
+            foreach (array_keys($sliders_array) as $slider_k) {
+                self::_lenslider_static_delete_sliders($slider_k, $sliders_array);
+            }
         }
         delete_option(self::$_bannersOption);
         delete_option(self::$settingsOption);
         @delete_option(self::$postsSliders);
-        $skins_custom_catalog = WP_CONTENT_DIR."/".LenSliderSkins::$skinsCustomCatalog;
+        $skins_custom_catalog = LenSliderSkins::_lenslider_skins_custom_abspath();
         if(!file_exists($skins_custom_catalog)) self::_lenslider_delete_dir($skins_custom_catalog);
         remove_action('lenslider_banners_processing', array(&$this, 'lenslider_banners_processing'));
         self::lenslider_plugin_deactivate();
     }
 
     public function lenslider_scripts_init() {
-        wp_enqueue_script('jquery');
-        wp_enqueue_script('jquery-ui-core');
-        wp_enqueue_script('jquery-ui-sortable');
-        wp_enqueue_script('thickbox');
+        foreach (self::$_requiredAdminJSHandles as $hndl) {
+            wp_enqueue_script($hndl);
+        }
         wp_enqueue_style ('thickbox');
         
-        wp_register_script('ls_admin',    plugins_url('js/ls_admin.js',                  $this->indexFile));
+        wp_register_script('ls_admin',    plugins_url('js/ls_admin.js',                  $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_admin');
         
-        wp_register_script('ls_tipsy',    plugins_url('js/jquery.tipsy.js',              $this->indexFile));
+        wp_register_script('ls_tipsy',    plugins_url('js/jquery.tipsy.js',              $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_tipsy');
         
-        wp_register_script('ls_cookie',   plugins_url('js/jquery.cookie.js',             $this->indexFile));
+        wp_register_script('ls_cookie',   plugins_url('js/jquery.cookie.js',             $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_cookie');
         
-        wp_register_script('ls_tinymce',  plugins_url('js/tinymce.js',                   $this->indexFile));
+        wp_register_script('ls_tinymce',  plugins_url('js/tinymce.js',                   $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_tinymce');
         
-        wp_register_script('ls_scrollto', plugins_url('js/jquery.scrollTo-1.4.2-min.js', $this->indexFile));
+        wp_register_script('ls_scrollto', plugins_url('js/jquery.scrollTo-1.4.2-min.js', $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_scrollto');
         
-        wp_register_script('ls_jnav',     plugins_url('js/jquery.nav.min.js',            $this->indexFile));
+        wp_register_script('ls_jnav',     plugins_url('js/jquery.nav.min.js',            $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_jnav');
         
-        wp_register_script('ls_alerts',   plugins_url('js/jquery.alerts.js',             $this->indexFile));
+        wp_register_script('ls_alerts',   plugins_url('js/jquery.alerts.js',             $this->indexFile), self::$_requiredAdminJSHandles);
         wp_enqueue_script('ls_alerts');
         
         wp_register_style('ls_admin_css', plugins_url('css/ls_admin.css',                $this->indexFile));
@@ -188,7 +197,7 @@ class LenSlider {
     
     public function lenslider_action_links($links, $file) {
         if($file == $this->_plugin_basename) {
-            $settings_link = "<a href=\"{$this->_requestSettingsURI}\">".__("Settings", 'lenslider')."</a>";
+            $settings_link = "<a href=\"{$this->_requestSettingsURI}\">".__("Settings", 'len-slider')."</a>";
             array_unshift($links, $settings_link);
         }
         return $links;
@@ -199,9 +208,9 @@ class LenSlider {
             if (!current_user_can('install_plugins'))
                     return $links;
             /*if ($file == $this->_plugin_basename) {
-                    $links[] = '<a href="http://backwpup.com/faq/" target="_blank">'.__('FAQ', 'lenslider').'</a>';
-                    $links[] = '<a href="http://backwpup.com/forum/" target="_blank">'.__('Support', 'lenslider').'</a>';
-                    $links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">'.__('Donate', 'lenslider').'</a>';
+                    $links[] = '<a href="http://backwpup.com/faq/" target="_blank">'.__('FAQ', 'len-slider').'</a>';
+                    $links[] = '<a href="http://backwpup.com/forum/" target="_blank">'.__('Support', 'len-slider').'</a>';
+                    $links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">'.__('Donate', 'len-slider').'</a>';
             }*/
             return $links;
     }
@@ -209,7 +218,7 @@ class LenSlider {
     public function lenslider_footer_link() {
         $settings_array = self::lenslider_get_array_from_wp_options(self::$settingsOption);
         if ($settings_array[self::$backlink] == 1) {
-            echo "<a href=\"http://www.lenslider.com/\" target=\"_blank\" title=\"".__("WordPress LenSlider", 'lenslider')."\">".__("Free slider plugin for WordPress", 'lenslider')."</a>\n";
+            echo "<a href=\"http://www.lenslider.com/\" target=\"_blank\" title=\"".__("WordPress LenSlider", 'len-slider')."\">".__("Free slider plugin for WordPress", 'len-slider')."</a>\n";
         }
     }
     
@@ -218,21 +227,21 @@ class LenSlider {
         array(
             'ls_link' =>
                 array(
-                    'title'  => __('Banner link', 'lenslider'),
+                    'title'  => __('Banner link', 'len-slider'),
                     'value'  => (empty($banner_array['ls_link']))?"http://":$banner_array['ls_link'], 'type' => 'input',
-                    'tipsy'  => __("Banner URL path. A minimum of 10 characters", 'lenslider'),
+                    'tipsy'  => __("Banner URL path. A minimum of 10 characters", 'len-slider'),
                     'tcheck' => true
                 ),
             'ls_title' =>
                 array(
-                    'title'  => __('Banner title', 'lenslider'),
+                    'title'  => __('Banner title', 'len-slider'),
                     'value'  => $banner_array['ls_title'], 'type' => 'input',
-                    'tipsy'  => __("Banner title. A minimum of 10 characters", 'lenslider'),
+                    'tipsy'  => __("Banner title. A minimum of 10 characters", 'len-slider'),
                     'tcheck' => true
                 ),
             'ls_text' =>
                 array(
-                    'title'  => __('Banner text', 'lenslider'),
+                    'title'  => __('Banner text', 'len-slider'),
                     'value'  => $banner_array['ls_text'], 'type' => 'textarea'
                 )
         );
@@ -241,19 +250,19 @@ class LenSlider {
     private function _lenslider_make_images_fields_array($has_thumb = false) {
         $array = array();
         $array['ls_image'] = array(
-            'title'    => __('Banner image', 'lenslider'),
+            'title'    => __('Banner image', 'len-slider'),
             'value'    => null,
             'tipsy'    => null,
             'tcheck'   => null,
-            'optgroup' => __('Post image', 'lenslider')
+            'optgroup' => __('Post image', 'len-slider')
         );
         if($has_thumb) {
             $array['ls_thumb_image'] = array(
-                'title'    => __('Banner thumbnail', 'lenslider'),
+                'title'    => __('Banner thumbnail', 'len-slider'),
                 'value'    => null,
                 'tipsy'    => null,
                 'tcheck'   => null,
-                'optgroup' => __('Post thumb', 'lenslider')
+                'optgroup' => __('Post thumb', 'len-slider')
             );
         }
         return $array;
@@ -263,7 +272,7 @@ class LenSlider {
         if(!$settings_array && $new_slider) $settings_array = self::$_settingsDefault;
         $settings_array[self::$skinName] = $skin_name;
         $thumbMaxWidthArray = array(
-            'title' => __("Maximum thumbnail width, px", 'lenslider'),
+            'title' => __("Maximum thumbnail width, px", 'len-slider'),
             'type' => 'input', 'size' => 5, 'maxlength' => 3, 'spectype' => 'int'
             );
         if(!$settings_array[self::$hasThumb]) $thumbMaxWidthArray['disabled'] = true;
@@ -273,27 +282,27 @@ class LenSlider {
                 array(
                     self::$bannersLimitName =>
                         array(
-                            'title' => sprintf(__("Limitation of banners for the slider %s <span class=\"description\">(max: %d)</span>", 'lenslider'), $slidernum, $this->bannersLimitDefault),
+                            'title' => sprintf(__("Limitation of banners for the slider %s <span class=\"description\">(max: %d)</span>", 'len-slider'), $slidernum, $this->bannersLimitDefault),
                             'type' => 'input', 'size' => 5, 'maxlength' => 2, 'spectype' => 'int'
                         ),
                     self::$maxSizeName =>
                         array(
-                            'title' => sprintf(__("Upload images maximum size, MB<br /><span class=\"description\">(max: %d)</span>", 'lenslider'), $this->imageFileSizeMAX),
+                            'title' => sprintf(__("Upload images maximum size, MB<br /><span class=\"description\">(max: %d)</span>", 'len-slider'), $this->imageFileSizeMAX),
                             'type' => 'input', 'size' => 5, 'maxlength' => 2, 'spectype' => 'int'
                         ),
                     self::$maxWidthName =>
                         array(
-                            'title' => sprintf(__("Maximum image width, px<br /><span class=\"description\">(min: %1d; max: %2d); proportions are kept</span>", 'lenslider'), $this->imageWidthMIN, $this->imageWidthMAX),
+                            'title' => sprintf(__("Maximum image width, px<br /><span class=\"description\">(min: %1d; max: %2d); proportions are kept</span>", 'len-slider'), $this->imageWidthMIN, $this->imageWidthMAX),
                             'type' => 'input', 'size' => 5, 'maxlength' => 4, 'spectype' => 'int'
                         ),
                     self::$qualityName =>
                         array(
-                            'title' => sprintf(__("Maximum quality of uploaded image<br /><span class=\"description\">(min: %1d, max: %2d)</span>", 'lenslider'), $this->imageQualityMIN, $this->imageQualityMAX),
+                            'title' => sprintf(__("Maximum quality of uploaded image<br /><span class=\"description\">(min: %1d, max: %2d)</span>", 'len-slider'), $this->imageQualityMIN, $this->imageQualityMAX),
                             'type' => 'input', 'size' => 5, 'maxlength' => 3, 'spectype' => 'int'
                         ),
                     self::$hasThumb => 
                         array(
-                            'title' => sprintf(__("Enable banners thumbnails for Slider %s", 'lenslider'), $slidernum),
+                            'title' => sprintf(__("Enable banners thumbnails for Slider %s", 'len-slider'), $slidernum),
                             'type' => 'checkbox', 'class' => 'chbx_is_thumb'
                         ),
                     self::$thumbMaxWidth => $thumbMaxWidthArray
@@ -302,19 +311,35 @@ class LenSlider {
     }
 
     public function lenslider_make_skins_files_wp_head() {
-        $enabled_sliders = self::lenslider_get_enabled_sliders_array_slidernums();
-        if(!empty($enabled_sliders) && is_array($enabled_sliders)) {
-            wp_enqueue_script('jquery');
-            wp_enqueue_script('jquery-ui-core');
-            wp_enqueue_script('jquery-ui-tabs');
-            wp_register_script('default-skin-custom', plugins_url('js/default-skin-custom.js', $this->indexFile));
+        if(!empty($this->_enabledSliders) && is_array($this->_enabledSliders)) {
+            foreach (self::$_requiredJSHandles as $hndl) {
+                wp_enqueue_script($hndl);
+            }
+            wp_register_script('default-skin-custom', plugins_url('js/default-skin-custom.js', $this->indexFile), self::$_requiredJSHandles);
             wp_enqueue_script('default-skin-custom');
-            wp_register_style('default-skin-css', plugins_url('css/defaultskin.css', $this->indexFile));
-            wp_enqueue_style('default-skin-css');
-            foreach ($enabled_sliders as $slidernum) {
+            if(LenSlider::lenslider_get_wp_version() >= 3.5) {
+                wp_register_script('jquery-ui-tabs-rotate', plugins_url('js/jquery-ui-tabs-rotate.js', $this->indexFile), self::$_requiredJSHandles);
+                wp_enqueue_script('jquery-ui-tabs-rotate');
+            }
+            foreach ($this->_enabledSliders as $slidernum) {
                 $skin_name = self::_lenslider_get_slider_skin_name($slidernum);
                 if($skin_name != self::$defaultSkin) {
                     $skinObjStatic = LenSliderSkins::lenslider_get_skin_params_object($skin_name);
+                    if(!empty($skinObjStatic->jsFiles) && is_array($skinObjStatic->jsFiles)) {
+                        foreach ($skinObjStatic->jsFiles as $filename) {
+                            $reg_name = str_ireplace(".js", '', basename($filename)."-{$skin_name}");
+                            wp_register_script($reg_name, str_ireplace(ABSPATH, self::$siteurl."/", $filename), self::$_requiredJSHandles, false, true);
+                            wp_enqueue_script($reg_name);
+                        }
+                    }
+                    $skinObj = self::lenslider_get_slider_skin_object($skin_name);
+                    if($skinObj && !empty($skinObj->_jsHead)) echo $skinObj->_jsHead;
+                    $default_js_array = (LenSliderSkins::_lenslider_skin_default_js_scripts_array($skin_name))?LenSliderSkins::_lenslider_skin_default_js_scripts_array($skin_name):false;
+                    if(!empty($default_js_array) && is_array($default_js_array)) {
+                        foreach ($default_js_array as $jsHandle) {
+                            wp_enqueue_script($jsHandle);
+                        }
+                    }
                     if(!empty($skinObjStatic->cssFiles) && is_array($skinObjStatic->cssFiles)) {
                         foreach ($skinObjStatic->cssFiles as $filename) {
                             $reg_name = str_ireplace(".css", '', basename($filename)."-{$skin_name}");
@@ -322,38 +347,29 @@ class LenSlider {
                             wp_enqueue_style($reg_name);
                         }
                     }
-                    $default_js_array = (LenSliderSkins::_lenslider_skin_default_js_scripts_array($skin_name))?LenSliderSkins::_lenslider_skin_default_js_scripts_array($skin_name):false;
-                    if(!empty($default_js_array) && is_array($default_js_array)) {
-                        foreach ($default_js_array as $jsHandle) {
-                            wp_enqueue_script($jsHandle);
-                        }
-                    }
-                    if(!empty($skinObjStatic->jsFiles) && is_array($skinObjStatic->jsFiles)) {
-                        foreach ($skinObjStatic->jsFiles as $filename) {
-                            $reg_name = $reg_name = str_ireplace(".js", '', basename($filename)."-{$skin_name}");
-                            wp_register_script($reg_name, str_ireplace(ABSPATH, self::$siteurl."/", $filename), array('jquery', 'jquery-ui-core', 'jquery-ui-tabs'), false, true);
-                            wp_enqueue_script($reg_name);
-                        }
-                    }
-                    $skinObj = self::lenslider_get_slider_skin_object($skin_name);
-                    if($skinObj && !empty($skinObj->_jsHead)) echo $skinObj->_jsHead;
                 }
             }
+            wp_register_style('default-skin-css', plugins_url('css/defaultskin.css', $this->indexFile));
+            wp_enqueue_style('default-skin-css');
         }
+    }
+    
+    public function lenslider_make_skins_files_wp_head_after() {
+        
     }
 
     public function lenslider_menu_add() {
         add_menu_page('LenSlider', 'LenSlider', self::$_capability, $this->indexFile, 'lenslider_index_gallery', plugins_url('images/icon_menu.png', $this->indexFile));
 
-        add_submenu_page($this->indexFile, __('Available LenSlider skins', 'lenslider'), __('Skins', 'lenslider'),    self::$_capability, $this->skinsPage,    'lenslider_skins_page');
-        add_submenu_page($this->indexFile, __('LenSlider settings', 'lenslider'),        __('Settings', 'lenslider'), self::$_capability, $this->settingsPage, 'lenslider_settins_page');
+        add_submenu_page($this->indexFile, __('Available LenSlider skins', 'len-slider'), __('Skins', 'len-slider'),    self::$_capability, $this->skinsPage,    'lenslider_skins_page');
+        add_submenu_page($this->indexFile, __('LenSlider settings', 'len-slider'),        __('Settings', 'len-slider'), self::$_capability, $this->settingsPage, 'lenslider_settins_page');
     }
     
     public function lenslider_admin_head() {
         echo "<script type=\"text/javascript\">
-                jQuery(document).ready(function($) {
-                    $(this).load(lenSliderJSReady($, \"{$this->_ajaxURL}\", {$this->_tipsy}, ".$this->_lenslider_is_plugin_page().", \"".__("Are you sure?", 'lenslider')."\", \"".__("You also want to delete thumbnail for this banner?", 'lenslider')."\", \"".__("No skins available", 'lenslider')."\", \"".__('slider comment', 'lenslider')."\", \"".__("Errors", 'lenslider')."\", \"".__("If  there are errors while filling fields, then check the fields marked with red border.", 'lenslider')."\", \"".__("Maximize", 'lenslider')."\", \"".__("Minimize", 'lenslider')."\", \"".__("Do you want to set skin settings for the slider?", 'lenslider')."\", ".json_encode($this->lenslider_allowed_url_strs()).", \"".__("Slider #{%torep%} errors:", 'lenslider')."\", \"".__("Banner {%torep%} errors:", 'lenslider')."\"));
-                })(jQuery);
+                jQuery(function() {
+                    lenSliderJSReady(\"{$this->_ajaxURL}\", {$this->_tipsy}, ".$this->_lenslider_is_plugin_page().", \"".__("Are you sure?", 'len-slider')."\", \"".__("You also want to delete thumbnail for this banner?", 'len-slider')."\", \"".__("No skins available", 'len-slider')."\", \"".__('slider comment', 'len-slider')."\", \"".__("Errors", 'len-slider')."\", \"".__("If  there are errors while filling fields, then check the fields marked with red border.", 'len-slider')."\", \"".__("Maximize", 'len-slider')."\", \"".__("Minimize", 'len-slider')."\", \"".__("Do you want to set skin settings for the slider?", 'len-slider')."\", ".json_encode($this->lenslider_allowed_url_strs()).", \"".__("Slider #{%torep%} errors:", 'len-slider')."\", \"".__("Banner {%torep%} errors:", 'len-slider')."\");
+                });
             </script>\n";
     }
     
@@ -365,7 +381,7 @@ class LenSlider {
             }
         }
         $current_locale = get_locale();
-        if(!empty($current_locale)) load_plugin_textdomain('lenslider', false, self::$_pluginName."/languages/");
+        if(!empty($current_locale)) load_plugin_textdomain(self::$_pluginName, false, self::$_pluginName."/languages/");
     }
     
     public function lenslider_register_tinymce_button($buttons) {
@@ -383,14 +399,14 @@ class LenSlider {
     }
     
     private function _leslider_check_unused_skins_to_default() {
-        $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
-        if(!empty($sliders_array) && is_array($sliders_array)) {
-            foreach (array_keys($sliders_array) as $slidernum) {
+        if(!empty($this->_sliders_array) && is_array($this->_sliders_array)) {
+            $ret_array = $this->_sliders_array;
+            foreach (array_keys($this->_sliders_array) as $slidernum) {
                 $slider_settings = self::lenslider_get_slider_settings($slidernum);
                 if(!in_array($slider_settings[self::$skinName], LenSliderSkins::lenslider_skins_folders_array())) $slider_settings[self::$skinName] = self::$defaultSkin;
-                $sliders_array[$slidernum][self::$_settingsTitle] = $slider_settings;
+                $ret_array[$slidernum][self::$_settingsTitle] = $slider_settings;
             }
-            $this->_lenslider_update_lenslider_option(self::$_bannersOption, $sliders_array);
+            $this->_lenslider_update_lenslider_option(self::$_bannersOption, $ret_array);
         }
         return true;
     }
@@ -420,7 +436,7 @@ class LenSlider {
     }
     
     public static function lenslider_dropdown_sliders($select_name, $check = false, $select_id = false, $style_string = false) {
-        $enabled_sliders = self::lenslider_get_enabled_sliders_array_slidernums();
+        $enabled_sliders = self::_lenslider_get_enabled_sliders_array_slidernums();
         if(!empty($enabled_sliders) && is_array($enabled_sliders)) {
             $ret = "<select name=\"{$select_name}\" class=\"ls_chosen\"";
             if(isset($style_string)) $ret .= " style=\"{$style_string}\"";
@@ -436,14 +452,16 @@ class LenSlider {
             }
             $ret .= "</select>";
             return $ret;
-        } else return __('No sliders available', 'lenslider');
+        } else return __('No sliders available', 'len-slider');
     }
     
     public static function lenslider_dropdown_posts($slidernum, $banner_k, $n, $check = false) {
-        $posts = get_posts();
+        $posts = get_posts(array(
+            'numberposts' => -1
+        ));
         if(!empty($posts)) {
             $ret = "<select name=\"blink_select_{$slidernum}_{$banner_k}_{$n}\" id=\"blink_select_{$slidernum}_{$banner_k}_{$n}\" style=\"max-width:220px;\">";
-            $ret .= "<option value=\"-1\">".__('Select...', 'lenslider')."</option>";
+            $ret .= "<option value=\"-1\">".__('Select...', 'len-slider')."</option>";
             foreach ($posts as $post) {
                 $ret .= "<option value=\"{$post->ID}\"";
                 if($check && $check == $post->ID) $ret .= " selected=\"selected\"";
@@ -455,11 +473,11 @@ class LenSlider {
     }
     
     public static function lenslider_dropdown_pages($slidernum, $banner_k, $n, $check = -1) {
-        return wp_dropdown_pages(array('echo'=>0, 'show_option_none'=>__('Select...', 'lenslider'), 'name'=>"blink_select_{$slidernum}_{$banner_k}_{$n}", 'selected'=>$check));
+        return wp_dropdown_pages(array('echo'=>0, 'show_option_none'=>__('Select...', 'len-slider'), 'name'=>"blink_select_{$slidernum}_{$banner_k}_{$n}", 'selected'=>$check));
     }
     
     public static function lenslider_dropdown_categories($slidernum, $banner_k, $n, $check = -1) {
-        return wp_dropdown_categories(array('echo'=>0, 'show_option_none'=>__('Select...', 'lenslider'), 'class'=>'pb_url_select', 'id'=>"blink_select_{$slidernum}_{$banner_k}_{$n}", 'selected'=>$check));
+        return wp_dropdown_categories(array('echo'=>0, 'show_option_none'=>__('Select...', 'len-slider'), 'class'=>'pb_url_select', 'id'=>"blink_select_{$slidernum}_{$banner_k}_{$n}", 'selected'=>$check));
     }
 
     protected function _lenslider_make_fields_array($input_array, $array_unset, $array_merge) {
@@ -579,6 +597,11 @@ class LenSlider {
         if(self::_lenslider_is_allowed_option($option_name)) return self::_lenslider_get_option($option_name);
     }
     
+    public static function lenslider_get_wp_version() {
+        global $wp_version;
+        return floatval($wp_version);
+    }
+
     public static function lenslider_get_slider_settings($slidernum) {
         $ret_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
         return (!empty($ret_array[$slidernum][self::$_settingsTitle]))?$ret_array[$slidernum][self::$_settingsTitle]:self::$_settingsDefault;
@@ -631,10 +654,9 @@ class LenSlider {
     }
     
     protected function lenslider_get_enabled_skins_array_names() {
-        $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
-        if(!empty($sliders_array) && is_array($sliders_array)) {
+        if(!empty($this->_sliders_array) && is_array($this->_sliders_array)) {
             $ret_array = array();
-            foreach (array_keys($sliders_array) as $slidernum) {
+            foreach (array_keys($this->_sliders_array) as $slidernum) {
                 $slider_settings = self::lenslider_get_slider_settings($slidernum);
                 $ret_array[] = $slider_settings[self::$skinName];
             }
@@ -644,11 +666,10 @@ class LenSlider {
     }
     
     public function lenslider_get_used_skins() {
-        $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
-        if(is_array($sliders_array)) {
+        if(is_array($this->_sliders_array)) {
             $arr = array();
-            foreach (array_keys($sliders_array) as $key) {
-                $temp_array = $sliders_array[$key][self::$_settingsTitle];
+            foreach (array_keys($this->_sliders_array) as $key) {
+                $temp_array = $this->_sliders_array[$key][self::$_settingsTitle];
                 $arr[] = $temp_array[self::$skinName];
             }
             return $arr;
@@ -657,10 +678,9 @@ class LenSlider {
     
     public function lenslider_get_sliders_admin($skins_array) {
         $ret = "";
-        $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
-        if(!empty($sliders_array) && is_array($sliders_array)) {
+        if(!empty($this->_sliders_array) && is_array($this->_sliders_array)) {
             $i=0;
-            foreach (array_keys($sliders_array) as $k) {
+            foreach (array_keys($this->_sliders_array) as $k) {
                 if($skins_array[$i] == self::$defaultSkin) $ret .= $this->lenslider_slider_item($k, $this->slidersLimit, false, self::$defaultSkin, true, self::lenslider_get_slider_settings($k), false);
                 else {
                     if(LenSliderSkins::lenslider_is_skin($skins_array[$i])) {
@@ -684,7 +704,7 @@ class LenSlider {
         if(self::_lenslider_is_allowed_option($option_name)) return @get_option($option_name);
     }
     
-    private static function lenslider_get_enabled_sliders_array_slidernums() {
+    private static function _lenslider_get_enabled_sliders_array_slidernums() {
         $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
         if(!empty($sliders_array) && is_array($sliders_array)) {
             $ret_array = array();
@@ -748,7 +768,7 @@ class LenSlider {
     
     /*---------------DELETE METHODS---------------*/
     public function lenslider_delete_banner($banner_id, $slidernum = false, $delete_thumb = true, $thumb_id = false, $delete_only_thumb = false, $sliders_array = false, $update_option = true, $delete_slider = false) {
-        if(!$sliders_array) $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
+        if(!$sliders_array) $sliders_array = $this->_sliders_array;
         if($slidernum) {
             if($delete_thumb && !empty($thumb_id)) {
                 if(@wp_delete_attachment($thumb_id) && !$delete_slider) {
@@ -768,8 +788,8 @@ class LenSlider {
         return ($update_option)?$this->_lenslider_update_option_sliders_array($sliders_array):true;
     }
 
-    public function lenslider_delete_slider($slidernum) {
-        $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
+    public function lenslider_delete_slider($slidernum, $sliders_array = false) {
+        if(!$sliders_array) $sliders_array = $this->_sliders_array;
         if(!empty($sliders_array[$slidernum]) && is_array($sliders_array[$slidernum])) {
             foreach($sliders_array[$slidernum] as $k=>$v) {
                 if($this->lenslider_delete_banner($k, $slidernum, true, $v['thumb_id'], false, $sliders_array, false, true)) continue;
@@ -792,12 +812,12 @@ class LenSlider {
         return rmdir($dir);
     }
     
-    private static function _lenslider_delete_slider_banners_ids($slidernum, $sliders_array = false) {
+    private static function _lenslider_static_delete_sliders($slidernum, $sliders_array = false) {
         if(!$sliders_array) $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
         if(!empty($sliders_array[$slidernum]) && is_array($sliders_array[$slidernum])) {
-            //$ret_array = array();
             foreach (array_keys($sliders_array[$slidernum]) as $banner_k) {
                 @wp_delete_attachment($banner_k);
+                if(!empty($sliders_array[$slidernum][$banner_k]['thumb_id'])) @wp_delete_attachment($sliders_array[$slidernum][$banner_k]['thumb_id']);
             }
         }
         return true;
@@ -848,8 +868,12 @@ class LenSlider {
                         switch ($format) {
                             case 'gif':
                                 $oldimage = imagecreatefromgif($newpath);
+                                imagealphablending($resImage, false);
+                                imagesavealpha($resImage, true);
+                                $transparent = imagecolorallocatealpha($resImage, 255, 255, 255, 127);
+                                imagefilledrectangle($resImage, 0, 0, $maxwidth, $image_heigth_resize, $transparent);
                                 imagecopyresampled($resImage, $oldimage, 0, 0, 0, 0, $maxwidth, $image_heigth_resize, $image_width, $image_height);
-                                imagegif($resImage, $newpath, $quality);
+                                imagegif($resImage, $newpath);
                                 break;
                             case 'jpg':
                                 $oldimage = imagecreatefromjpeg($newpath);
@@ -858,8 +882,12 @@ class LenSlider {
                                 break;
                             case 'png':
                                 $oldimage = imagecreatefrompng($newpath);
+                                imagealphablending($resImage, false);
+                                imagesavealpha($resImage, true);
+                                $transparent = imagecolorallocatealpha($resImage, 255, 255, 255, 127);
+                                imagefilledrectangle($resImage, 0, 0, $maxwidth, $image_heigth_resize, $transparent);
                                 imagecopyresampled($resImage, $oldimage, 0, 0, 0, 0, $maxwidth, $image_heigth_resize, $image_width, $image_height);
-                                imagepng($resImage, $newpath, $quality);
+                                imagepng($resImage, $newpath, floatval(intval($quality)/10)-1);
                                 break;
                         }
                         @chmod($newpath, 0644);
@@ -1164,7 +1192,7 @@ class LenSlider {
     }
     
     private function _lenslider_update_post_banners_checked($post_id, $val_array, $sliders_array = false) {
-        $sliders_array = (!$sliders_array)?self::lenslider_get_array_from_wp_options(self::$_bannersOption):$sliders_array;
+        $sliders_array = (!$sliders_array)?$this->_sliders_array:$sliders_array;
         if(!empty($sliders_array) && is_array($sliders_array)) {
             foreach ($sliders_array as $slidernum => $banners_array) {
                 if(!empty($banners_array) && is_array($banners_array)) {
@@ -1193,10 +1221,10 @@ class LenSlider {
     //if(!$attachment_id) => new banner
     private function _lenslider_link_variants($slidernum, $n, $title, $attachment_id = false, $check = false, $url_type_id = false) {
         $array = array(
-            'lsurl'  => __('Url', 'lenslider'),
-            'post'   => __('Post', 'lenslider'),
-            'page'   => __('Page', 'lenslider'),
-            'cat'    => __('Category', 'lenslider')
+            'lsurl'  => __('Url', 'len-slider'),
+            'post'   => __('Post', 'len-slider'),
+            'page'   => __('Page', 'len-slider'),
+            'cat'    => __('Category', 'len-slider')
         );
         $ret = "<div class=\"ls_post_url\"><table border=\"0\"><tr>";
         $i=0;
@@ -1360,7 +1388,7 @@ class LenSlider {
         $array_merge = ($skinObj && $skinObj->bannerMergeArray)?$skinObj->bannerMergeArray:false;
         $array_unset = ($skinObj && $skinObj->bannerUnsetArray)?$skinObj->bannerUnsetArray:false;
         if(!$new_slider) {
-            $sliders_array = self::lenslider_get_array_from_wp_options(self::$_bannersOption);
+            $sliders_array = $this->_sliders_array;
             if(!empty($sliders_array[$slidernum]) && is_array($sliders_array[$slidernum])) {
                 $n=0;
                 foreach ($sliders_array[$slidernum] as /*banner_key*/$k=>$banner_array) {
@@ -1383,10 +1411,10 @@ class LenSlider {
         if(($check_enable && self::lenslider_is_enabled_slider($slidernum)) || !$check_enable) {
             $skin_name      = self::_lenslider_get_slider_skin_name($slidernum);
             $slider_banners = self::lenslider_get_slider_banners($slidernum);
-            if(file_exists(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html")) {
-                $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html");
-            } elseif(file_exists(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html")) {
-                $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_custom_abspath()."/".self::_lenslider_get_slider_skin_name($slidernum)."/output/output.html");
+            if(file_exists(LenSliderSkins::_lenslider_skins_abspath()."/".$skin_name."/output/output.html")) {
+                $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/".$skin_name."/output/output.html");
+            } elseif(file_exists(LenSliderSkins::_lenslider_skins_custom_abspath()."/".$skin_name."/output/output.html")) {
+                $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_custom_abspath()."/".$skin_name."/output/output.html");
             } else {
                 if($skin_name == self::$defaultSkin) $file_text = file_get_contents(LenSliderSkins::_lenslider_skins_abspath()."/default.html");
                 else {
@@ -1439,16 +1467,16 @@ class LenSlider {
                 if($url_type != 'lsurl' && !empty($array) && is_array($array) && !empty($array['ls_link']['value'])) $ret .= self::lenslider_banner_hidden($slidernum, 'url_type_id', $url_type_id);
                 $ret .= "
                 </div><div class=\"ls_slide_image_inner_overlay\" id=\"boverlay_{$attachment_id}\" style=\"display:none;\"></div>";
-                if($attachment_id) $ret .= "<div class=\"handlediv atipsy\" title=\"".sprintf(__("Banner %d expand / collapse", 'lenslider'), $nn)."\"><a href=\"javascript:;\"></a></div>
-                <div class=\"ls_banner_control ls_banner_close\"><a class=\"liveajaxbdel atipsy\" id=\"liveajaxbdel_{$attachment_id}_{$attachment_thumb_id}\" href=\"javascript:;\" title=\"".sprintf(__("Delete banner %d of Slider %s", 'lenslider'), $nn, $slidernum)."\"></a></div>";
+                if($attachment_id) $ret .= "<div class=\"handlediv atipsy\" title=\"".sprintf(__("Banner %d expand / collapse", 'len-slider'), $nn)."\"><a href=\"javascript:;\"></a></div>
+                <div class=\"ls_banner_control ls_banner_close\"><a class=\"liveajaxbdel atipsy\" id=\"liveajaxbdel_{$attachment_id}_{$attachment_thumb_id}\" href=\"javascript:;\" title=\"".sprintf(__("Delete banner %d of Slider %s", 'len-slider'), $nn, $slidernum)."\"></a></div>";
                 elseif($n!=0) $ret .= "<div class=\"ls_banner_control ls_banner_close\"><a class=\"livebdel\" href=\"javascript:;\"></a></div>";
                 $ret .= "
-                <h3 class=\"hndle\"><span>".sprintf(__("Banner %d", 'lenslider'), $nn)."{$post_title}</span></h3>
+                <h3 class=\"hndle\"><span>".sprintf(__("Banner %d", 'len-slider'), $nn)."{$post_title}</span></h3>
                 <div class=\"inside\">
                     <table border=\"0\" width=\"100%\">
                         <tr>
                             <td width=\"300\" valign=\"top\">
-                                <label class=\"ls_label\">".sprintf(__("Banner %d image", 'lenslider'), $nn)."</label>";
+                                <label class=\"ls_label\">".sprintf(__("Banner %d image", 'len-slider'), $nn)."</label>";
                                 if($img && $attachment_id) {
                                     $ret .= "<div class=\"ls_slide_image\" id=\"slide_image_{$attachment_id}\">
                                                 <div class=\"ls_slide_image_inner\">";
@@ -1456,7 +1484,7 @@ class LenSlider {
                                     $ret .= "<div class=\"ls_slide_image_inner_controls ls_rounded\">
                                                 <ul>
                                                     <li>";
-                                                        $ret .= "<a class=\"c_del atipsy\" id=\"mbgdel_{$attachment_id}_{$attachment_thumb_id}_{$slidernum}\" href=\"javascript:;\" title=\"".__("Delete image", 'lenslider')."\"></a>";
+                                                        $ret .= "<a class=\"c_del atipsy\" id=\"mbgdel_{$attachment_id}_{$attachment_thumb_id}_{$slidernum}\" href=\"javascript:;\" title=\"".__("Delete image", 'len-slider')."\"></a>";
                                                     $ret .= "</li>
                                                 </ul><div class=\"clear\"></div>
                                             </div><!--ls_slide_image_inner_controls-->
@@ -1471,7 +1499,7 @@ class LenSlider {
                                 if($has_thumb) {
                                 $ret.="
                                 <div class=\"tgl_thumb_{$slidernum}\"{$hidden}>
-                                <label class=\"ls_label\" style=\"margin-top:10px\">".sprintf(__("Banner %d thumbnail", 'lenslider'), $nn)."</label><br />";
+                                <label class=\"ls_label\" style=\"margin-top:10px\">".sprintf(__("Banner %d thumbnail", 'len-slider'), $nn)."</label><br />";
                                 if($img_thumb && $attachment_thumb_id) {
                                     $ret .= "<div class=\"ls_slide_image\" id=\"slide_image_thumb_{$attachment_thumb_id}\">
                                         <div class=\"ls_slide_image_inner thmb\">";
@@ -1479,7 +1507,7 @@ class LenSlider {
                                         $ret .= "<div class=\"ls_slide_image_inner_controls ls_rounded\">
                                                 <ul>
                                                     <li>";
-                                                        $ret .= "<a class=\"c_thdel atipsy\" id=\"mbgthdel_{$attachment_id}_{$attachment_thumb_id}_{$slidernum}\" href=\"javascript:;\" title=\"".__("Delete thumbnail", 'lenslider')."\"></a>";
+                                                        $ret .= "<a class=\"c_thdel atipsy\" id=\"mbgthdel_{$attachment_id}_{$attachment_thumb_id}_{$slidernum}\" href=\"javascript:;\" title=\"".__("Delete thumbnail", 'len-slider')."\"></a>";
                                                     $ret .= "</li>
                                                 </ul><div class=\"clear\"></div>
                                             </div><!--ls_slide_image_inner_controls-->
@@ -1524,20 +1552,20 @@ class LenSlider {
                         <input type=\"hidden\" name=\"sliderhidden[{$n_slider}]\" />
                         <input type=\"hidden\" name=\"slider_skin_name_{$n_slider}\" value=\"{$skin_name}\" />
                         <div class=\"ls_box_header\">
-                            <span class=\"ls_title\">".sprintf(__("Slider <u>%s</u>", 'lenslider'), $n_slider)."</span>
+                            <span class=\"ls_title\">".sprintf(__("Slider <u>%s</u>", 'len-slider'), $n_slider)."</span>
                             <div class=\"ls_floatleft\">
                                 <ul class=\"tit_tabs tit_tabs_{$n_slider}\">
-                                    <li class=\"first_li_{$n_slider} active\"><a class=\"sl_tabs_{$n_slider}\" href=\"#banners_{$n_slider}\"><span class=\"images\">".__('Banners', 'lenslider')."</span></a></li>
-                                    <li><a class=\"sl_tabs_{$n_slider}\" href=\"#settings_{$n_slider}\"><span class=\"stngs\">".__('Settings', 'lenslider')."</span></a></li>
+                                    <li class=\"first_li_{$n_slider} active\"><a class=\"sl_tabs_{$n_slider}\" href=\"#banners_{$n_slider}\"><span class=\"images\">".__('Banners', 'len-slider')."</span></a></li>
+                                    <li><a class=\"sl_tabs_{$n_slider}\" href=\"#settings_{$n_slider}\"><span class=\"stngs\">".__('Settings', 'len-slider')."</span></a></li>
                                 </ul><div class=\"clear\"></div>
                             </div><!--ls_floatleft-->
                             <div class=\"ls_floatright\">
                                 <ul class=\"utm_ul\">";
                                 if(!$new_slider) {
-                                    $ret.="<li class=\"r\"><a id=\"delslider_{$n_slider}\" href=\"javascript:;\" class=\"ls_minibutton slajaxdel atipsy\"><span class=\"del\">".__("Full delete Slider", 'lenslider')."</span></a></li>
-                                    <li class=\"r\"><a id=\"sl_banner_{$n_slider}\" class=\"ls_minibutton sl_banners atipsy\" href=\"javascript:;\" title=\"".sprintf(__("Expand / Collapse Slider %s banners", 'lenslider'), $n_slider)."\"><span class=\"";$ret.=(@$_COOKIE["folding_{$n_slider}"]=='svernuto')?"plus":"minus";$ret.="\">";$ret.=(@$_COOKIE["folding_{$n_slider}"]=='svernuto')?__("Maximize", 'lenslider'):__("Minimize", 'lenslider');$ret.="</span></a></li>";
+                                    $ret.="<li class=\"r\"><a id=\"delslider_{$n_slider}\" href=\"javascript:;\" class=\"ls_minibutton slajaxdel atipsy\"><span class=\"del\">".__("Full delete Slider", 'len-slider')."</span></a></li>
+                                    <li class=\"r\"><a id=\"sl_banner_{$n_slider}\" class=\"ls_minibutton sl_banners atipsy\" href=\"javascript:;\" title=\"".sprintf(__("Expand / Collapse Slider %s banners", 'len-slider'), $n_slider)."\"><span class=\"";$ret.=(@$_COOKIE["folding_{$n_slider}"]=='svernuto')?"plus":"minus";$ret.="\">";$ret.=(@$_COOKIE["folding_{$n_slider}"]=='svernuto')?__("Maximize", 'len-slider'):__("Minimize", 'len-slider');$ret.="</span></a></li>";
                                 } elseif($show_controls) {
-                                    $ret.="<li class=\"r\"><a id=\"delslider_{$n_slider}\" href=\"javascript:;\" class=\"ls_minibutton atipsy slremove\"><span class=\"del\">".__("Remove Slider form", 'lenslider')."</span></a></li>";
+                                    $ret.="<li class=\"r\"><a id=\"delslider_{$n_slider}\" href=\"javascript:;\" class=\"ls_minibutton atipsy slremove\"><span class=\"del\">".__("Remove Slider form", 'len-slider')."</span></a></li>";
                                 }
                                 $ret.="
                                 </ul>
@@ -1547,17 +1575,17 @@ class LenSlider {
                         if($settings_array[self::$sliderDisenName]==0 && !$new_slider) $ret.="<div class=\"ls_notactive\">";
                         $ret.="
                         <div class=\"ls_under_title_menu\">
-                            <label class=\"ls_label ls_floatleft\" style=\"margin:5px 6px 0 0\" for=\"skin_for_{$n_slider}\">".__('Slider skin', 'lenslider')."</label>
+                            <label class=\"ls_label ls_floatleft\" style=\"margin:5px 6px 0 0\" for=\"skin_for_{$n_slider}\">".__('Slider skin', 'len-slider')."</label>
                             <div class=\"ls_floatleft\" style=\"margin-right:20px\">".LenSliderSkins::lenslider_skins_dropdown("slset[{$n_slider}][".self::$skinName."]", $skin_check, $skins_disabled, "style=\"width:100px\" class=\"swskin swskin_{$n_slider} atipsy_w\" title=\"".sprintf(self::$skin_change_note, $n_slider)."\" id=\"skin_for_{$n_slider}\"")."</div>
                             <div class=\"ls_floatleft\" style=\"padding-top:5px;\">
-                                <input type=\"radio\" name=\"slset[{$n_slider}][".self::$sliderDisenName."]\" id=\"".self::$sliderDisenName."_en_{$n_slider}\" value=\"1\" ";if($new_slider) {$ret.="checked=\"checked\"";}$ret.=checked($settings_array[self::$sliderDisenName], 1, false);$ret.=" /><label class=\"sl_en";if($settings_array[self::$sliderDisenName]==1 || $new_slider) {$ret.=" sl_disen_cur";}$ret.="\" for=\"".self::$sliderDisenName."_en_{$n_slider}\">&nbsp;".__("Enable", 'lenslider')."</label>
+                                <input type=\"radio\" name=\"slset[{$n_slider}][".self::$sliderDisenName."]\" id=\"".self::$sliderDisenName."_en_{$n_slider}\" value=\"1\" ";if($new_slider) {$ret.="checked=\"checked\"";}$ret.=checked($settings_array[self::$sliderDisenName], 1, false);$ret.=" /><label class=\"sl_en";if($settings_array[self::$sliderDisenName]==1 || $new_slider) {$ret.=" sl_disen_cur";}$ret.="\" for=\"".self::$sliderDisenName."_en_{$n_slider}\">&nbsp;".__("Enable", 'len-slider')."</label>
                                 <span class=\"ls_sep\"></span>
-                                <input type=\"radio\" name=\"slset[{$n_slider}][".self::$sliderDisenName."]\" id=\"".self::$sliderDisenName."_dis_{$n_slider}\" value=\"0\" ";$ret.=checked($settings_array[self::$sliderDisenName], 0, false);$ret.=" /><label class=\"sl_dis";if($settings_array[self::$sliderDisenName]==0) {$ret.=" sl_disen_cur";}$ret.="\" for=\"".self::$sliderDisenName."_dis_{$n_slider}\">&nbsp;".__("Disable", 'lenslider')."</label>
+                                <input type=\"radio\" name=\"slset[{$n_slider}][".self::$sliderDisenName."]\" id=\"".self::$sliderDisenName."_dis_{$n_slider}\" value=\"0\" ";$ret.=checked($settings_array[self::$sliderDisenName], 0, false);$ret.=" /><label class=\"sl_dis";if($settings_array[self::$sliderDisenName]==0) {$ret.=" sl_disen_cur";}$ret.="\" for=\"".self::$sliderDisenName."_dis_{$n_slider}\">&nbsp;".__("Disable", 'len-slider')."</label>
                                 <span class=\"ls_sep\"></span>
                             </div>
                             <div class=\"ls_title_comment ls_floatleft\">
                                 <input type=\"text\" maxlength=\"60\" style=\"margin:3px 10px 0 0\" name=\"slset[{$n_slider}][".self::$sliderComment."]\" id=\"".self::$sliderComment."_{$n_slider}\" value=\"";
-                                $ret .= (!empty($settings_array[self::$sliderComment]))?$settings_array[self::$sliderComment]:__('slider comment', 'lenslider');
+                                $ret .= (!empty($settings_array[self::$sliderComment]))?$settings_array[self::$sliderComment]:__('slider comment', 'len-slider');
                                 $ret .= "\" ";
                                 if(empty($settings_array[self::$sliderComment])) $ret .= "class=\"ls_input prevent\" ";
                                 $ret .= "/>
@@ -1565,31 +1593,31 @@ class LenSlider {
                             <div class=\"ls_floatleft\">
                                 <input type=\"checkbox\" style=\"margin:6px 5px 0 0\" name=\"slset[{$n_slider}][".self::$sliderRandom."]\" id=\"".self::$sliderRandom."_{$n_slider}\"";
                                 if(!empty($settings_array[self::$sliderRandom])) $ret .= " checked=\"checked\"";
-                                $ret .= " /><label style=\"display:inline-block;margin-top:6px\" for=\"".self::$sliderRandom."_{$n_slider}\">".__('Random', 'lenslider')."</label>
+                                $ret .= " /><label style=\"display:inline-block;margin-top:6px\" for=\"".self::$sliderRandom."_{$n_slider}\">".__('Random', 'len-slider')."</label>
                             </div>
                             <div class=\"ls_floatright\">
                                 <ul class=\"utm_ul\">
-                                    <!--li class=\"r\"><a class=\"ls_minibutton\" href=\"#\"><span class=\"rolldown\">".__('Quick info', 'lenslider')."</span></a></li-->";
-                                    if(!$new_slider) $ret.="<li class=\"r\"><a class=\"ls_minibutton thickbox\" title=\"".sprintf(__("Slider #%s preview", 'lenslider'), $n_slider)."\" href=\"".plugins_url('ls-preview.php', $this->indexFile)."?slidernum={$n_slider}&keepThis=true&TB_iframe=true&height=600&width=1000\"><span class=\"export\">".__('Preview', 'lenslider')."</span></a></li>";
+                                    <!--li class=\"r\"><a class=\"ls_minibutton\" href=\"#\"><span class=\"rolldown\">".__('Quick info', 'len-slider')."</span></a></li-->";
+                                    if(!$new_slider) $ret.="<li class=\"r\"><a class=\"ls_minibutton thickbox\" title=\"".sprintf(__("Slider #%s preview", 'len-slider'), $n_slider)."\" href=\"".plugins_url('ls-preview.php', $this->indexFile)."?slidernum={$n_slider}&keepThis=true&TB_iframe=true&height=600&width=1000\"><span class=\"export\">".__('Preview', 'len-slider')."</span></a></li>";
                                     $ret.="
                                 </ul><div class=\"clear\"></div>
                             </div><!--ls_floatright-->
                             <div class=\"clear\"></div>
                         </div><!--ls_under_title_menu-->
                         <div id=\"banners_{$n_slider}\" class=\"metabox-holder ls_box_content ls_box_content_{$n_slider} sl_content_{$n_slider}\">
-                            <ul id=\"slidernum_{$n_slider}\" class=\"sortable meta-box-sortables\">";
+                            <ul id=\"slidernum_{$n_slider}\" class=\"ls-sortable meta-box-sortables\">";
                                 $ret .= (!empty($skinObj))?$this->lenslider_banners_items($n_slider, $new_slider, $skinObj):$this->lenslider_banners_items($n_slider, $new_slider);
                             $ret .= "
                             </ul>
                         </div><!--ls_box_content-->
                         <div id=\"settings_{$n_slider}\" class=\"ls_box_content ls_box_content_{$n_slider} sl_content_{$n_slider}\" style=\"display:none;\">
-                            <div class=\"ls_h3\"><h3>".sprintf(__("Slider %s settings", 'lenslider'), $n_slider)."</h3></div>";
+                            <div class=\"ls_h3\"><h3>".sprintf(__("Slider %s settings", 'len-slider'), $n_slider)."</h3></div>";
                             $ret .= (!empty($skinObj))?$this->lenslider_slider_settings_add($n_slider, $settings_array, $this->_lenslider_make_default_slider_settings_array($n_slider, $settings_array, $new_slider, $skin_name), $skinObj->_sliderMergeSettingsArray):$this->lenslider_slider_settings_add($n_slider, $settings_array, $this->_lenslider_make_default_slider_settings_array($n_slider, $settings_array, $new_slider, $skin_name));
                             $ret .= 
                             "<div class=\"ls_slider_sets\">
-                                <div class=\"ls_load ls_floatleft\" style=\"margin-right:12px;\"><a id=\"set_glob_{$n_slider}\" class=\"ls_minibutton set_global_set_sldr\" href=\"javascript:;\"><span class=\"getdown\">".__("Get global settings", 'lenslider')."</span></a></div>
-                                <div class=\"ls_load ls_floatleft\" style=\"margin-right:12px;\"><a id=\"set_local_{$n_slider}\" class=\"ls_minibutton set_local_set_sldr\" href=\"javascript:;\" style=\"display:none;\"><span class=\"getup\">".__("Return local settings", 'lenslider')."</span></a></div>";
-                                if($this->_lenslider_skin_has_settings($skin_name)) $ret .= "<div class=\"ls_load ls_floatleft\" style=\"margin-right:12px;\"><a id=\"set_skin_{$n_slider}\" class=\"ls_minibutton set_skin_set_sldr\" href=\"javascript:;\"><span class=\"getdown\">".__("Set skin settings", 'lenslider')."</span></a></div>";
+                                <div class=\"ls_load ls_floatleft\" style=\"margin-right:12px;\"><a id=\"set_glob_{$n_slider}\" class=\"ls_minibutton set_global_set_sldr\" href=\"javascript:;\"><span class=\"getdown\">".__("Get global settings", 'len-slider')."</span></a></div>
+                                <div class=\"ls_load ls_floatleft\" style=\"margin-right:12px;\"><a id=\"set_local_{$n_slider}\" class=\"ls_minibutton set_local_set_sldr\" href=\"javascript:;\" style=\"display:none;\"><span class=\"getup\">".__("Return local settings", 'len-slider')."</span></a></div>";
+                                if($this->_lenslider_skin_has_settings($skin_name)) $ret .= "<div class=\"ls_load ls_floatleft\" style=\"margin-right:12px;\"><a id=\"set_skin_{$n_slider}\" class=\"ls_minibutton set_skin_set_sldr\" href=\"javascript:;\"><span class=\"getdown\">".__("Set skin settings", 'len-slider')."</span></a></div>";
                                 $ret .= "<div class=\"clear\"></div>
                             </div>
                             <div class=\"clear\"></div>
@@ -1598,7 +1626,7 @@ class LenSlider {
                         $ret.="
                         <div class=\"ls_footer\">
                             <div class=\"ls_floatleft\">
-                                <div class=\"ls_load\"><a id=\"banner_slider_{$n_slider}\" class=\"ls_minibutton add_banner\" href=\"javascript:;\"><span class=\"plus\">".sprintf(__("Add new banner for Slider %s", 'lenslider'), $n_slider)."</span></a></div>
+                                <div class=\"ls_load\"><a id=\"banner_slider_{$n_slider}\" class=\"ls_minibutton add_banner\" href=\"javascript:;\"><span class=\"plus\">".sprintf(__("Add new banner for Slider %s", 'len-slider'), $n_slider)."</span></a></div>
                             </div><!--ls_floatleft-->
                             <div class=\"clear\"></div>
                         </div><!--ls_footer-->
@@ -1618,7 +1646,7 @@ class LenSlider {
                         $ret .= "<li id=\"sliders_nav_li_{$slidernum}\"";
                         if($slider_settings_array[self::$sliderDisenName] == 0) $ret .= " class=\"dis\"";
                         $ret .= "><a href=\"#slider_metabox_{$slidernum}\">";
-                        $ret .= (!empty($slider_settings_array[self::$sliderComment]))?sprintf(__("Slider <u>#%s</u><br />(<em>{$slider_settings_array[self::$sliderComment]}</em>)", 'lenslider'), $slidernum):sprintf(__("Slider <u>#%s</u>", 'lenslider'), $slidernum);
+                        $ret .= (!empty($slider_settings_array[self::$sliderComment]))?sprintf(__("Slider <u>#%s</u><br />(<em>{$slider_settings_array[self::$sliderComment]}</em>)", 'len-slider'), $slidernum):sprintf(__("Slider <u>#%s</u>", 'len-slider'), $slidernum);
                         $ret .= "</a></li>";
                     }
             $ret .= "</ul>";

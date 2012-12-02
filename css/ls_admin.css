@@ -31,6 +31,7 @@
 }
 #ls_save_metabox.ls_fixed {
     margin-top: -40px;
+    margin-right: 18px;
 }
 .ls_metabox,.ls_metabox2 {
     border: 1px solid #b4b4b4;
@@ -456,14 +457,14 @@ a.ls_min_a_del:hover,
     padding: 0 !important;
     border: 0 !important;
 }
-.sortable {
+.ls-sortable {
     list-style-type: none;
 }
-.sortable .inside {
+.ls-sortable .inside {
     padding-top: 0;
     padding-bottom: 10px;
 }
-.sortable li {
+.ls-sortable li {
     display: block;
     position: relative;
     /*height: 265px;*/
@@ -471,11 +472,11 @@ a.ls_min_a_del:hover,
     overflow: hidden;
     margin-bottom: 10px;
 }
-.sortable .min {
+.ls-sortable .min {
     height: 29px;
     overflow: hidden;
 }
-.sortable .ls-state-highlight {
+.ls-sortable .ls-state-highlight {
     background: #ddd;
     border: 1px dashed #666 !important;
     height: 290px;
@@ -880,7 +881,7 @@ a.c_nwi {
 }
 .ls_footer {
     padding: 7px 14px 7px 8px;
-    background: #e8e8e8 url(../footer_bar_bg.png) repeat-x;
+    background: #e8e8e8;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
 }

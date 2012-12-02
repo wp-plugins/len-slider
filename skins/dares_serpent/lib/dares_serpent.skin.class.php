@@ -20,11 +20,11 @@ final class Dares_serpentLenSliderSkin extends LenSlider {
                 'maxlength' => 3, 'type' => 'input'
             )/*,
             'ls_has_thumb' => array(
-                'title' => sprintf(__("Enable banners thumbnails for Slider %s", 'lenslider'), $n_slider),
+                'title' => sprintf(__("Enable banners thumbnails for Slider %s", 'len-slider'), $n_slider),
                 'type' => 'checkbox', 'class' => 'chbx_is_thumb', 'value' => 'on'
             ),
             'ls_thumb_max_width' => array(
-                'title' => __("Maximum thumbnail width, px", 'lenslider'),
+                'title' => __("Maximum thumbnail width, px", 'len-slider'),
                 'type' => 'input', 'size' => 5, 'maxlength' => 3, 'spectype' => 'int', 'value' => 100
             )*/
         );

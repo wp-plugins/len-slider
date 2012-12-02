@@ -4,7 +4,7 @@ Plugin Name: LenSlider
 Plugin URI: http://www.lenslider.com/
 Description: This plugin allows you easy to generate multiple visual sliders as well as easy to integrate them into any place of your site via slider php-code or shortcode (plugin timyMCE button). A lot of plugin slider skins will help you to visualize your slider.
 Author: Igor Sazonov
-Version: 1.1.3
+Version: 1.2
 Author URI: http://www.lenslider.com/about-author/
 License: GPLv2
 
@@ -49,20 +49,20 @@ function lenslider_index_gallery() {
                         <div style="position:relative;">
                             <div class="ls_metabox2 ls_rounded ls_shadow" id="ls_save_metabox">
                                 <div class="ls_box_header">
-                                    <span class="ls_title"><?php _e('Save', 'lenslider');?></span>
+                                    <span class="ls_title"><?php _e('Save', 'len-slider');?></span>
                                 </div><!--ls_box_header-->
                                 <ul class="ls_linear">
                                     <li>
-                                        <span class="ls_zag"><?php _e('Select skin:', 'lenslider')?></span>
+                                        <span class="ls_zag"><?php _e('Select skin:', 'len-slider')?></span>
                                         <?php echo LenSliderSkins::lenslider_skins_dropdown("slider_ajax_skins", LenSlider::$defaultSkin, false, "style=\"width:100%;margin-bottom:15px\"")?>
-                                        <div class="ls_load"><a class="ls_minibutton add_slider" href="javascript:;"><span class="plus"><?php _e('Add new slider', 'lenslider');?></span></a></div>
+                                        <div class="ls_load"><a class="ls_minibutton add_slider" href="javascript:;"><span class="plus"><?php _e('Add new slider', 'len-slider');?></span></a></div>
                                     </li>
                                     <li>
-                                        <span class="ls_zag"><?php _e('Sliders list', 'lenslider')?></span>
+                                        <span class="ls_zag"><?php _e('Sliders list', 'len-slider')?></span>
                                         <?php echo LenSlider::lenslider_sliders_list()?>
                                     </li>
                                     <li>
-                                        <div align="center"><input type="submit" class="ls_bbutton" name="ls_update" value="<?php _e('Submit LenSlider data', 'lenslider');?>" /></div>
+                                        <div align="center"><input type="submit" class="ls_bbutton" name="ls_update" value="<?php _e('Submit LenSlider data', 'len-slider');?>" /></div>
                                     </li>
                                 </ul><!--ls_linear-->
                             </div><!--ls_metabox2-->

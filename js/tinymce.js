@@ -1,14 +1,14 @@
 (function() {
     tinymce.PluginManager.requireLangPack('len-slider');
-    tinymce.create('tinymce.plugins.LenSliderPlugin', {
+    tinymce.create('tinymce.plugins.LenSlider', {
         init : function(ed, url) {
             url = url.replace(/wp-admin/, '');
             ed.addButton('len-slider', {
-                title : 'lenslider.title',
+                title : 'len-slider.title',
                 image :  url+'wp-content/plugins/len-slider/images/tinymce_button.png',
-                cmd   : 'lenslider'
+                cmd   : 'len-slider'
             });
-            ed.addCommand('lenslider', function() {
+            ed.addCommand('len-slider', function() {
                 ed.windowManager.open({
                     file       : url+'wp-content/plugins/len-slider/tinymce.php',
                     width      : 350,
@@ -32,9 +32,9 @@
                 author    : 'Igor Sazonov',
                 authorurl : 'http://www.lenslider.com/',
                 infourl   : 'http://www.lenslider.com/',
-                version   : '1.1.3'
+                version   : '1.2'
             };
         }
     });
-    tinymce.PluginManager.add('lenslider', tinymce.plugins.LenSliderPlugin);
+    tinymce.PluginManager.add('lenslider', tinymce.plugins.LenSlider);
 })();

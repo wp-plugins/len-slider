@@ -1,3 +1,3 @@
-tinyMCE.addI18n("en.lenslider",{
+tinyMCE.addI18n("en.len-slider",{
    title : 'Insert LenSlider shortcode'
 });
