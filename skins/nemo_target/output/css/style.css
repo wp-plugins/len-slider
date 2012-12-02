@@ -52,6 +52,12 @@
     text-decoration:none;
     color:#fff;
 }
+.ls_nemotar_ib_manage li:first-child,.ls_nemotar_ib_manage li:first-child a{
+    border-bottom-left-radius:8px;
+}
+.ls_nemotar_ib_manage li:last-child,.ls_nemotar_ib_manage li:last-child a{
+    border-bottom-right-radius:8px;
+}
 .ls_nemotar_ib_manage li.ui-state-active{
     background-color:#282828;
 }
