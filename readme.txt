@@ -1,6 +1,6 @@
 ﻿=== Len Slider ===
 Contributors: tigusigalpa
-Tags: slider, carousel, slideshow, banners, video slider, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
+Tags: slider, carousel, slideshow, banners, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.3
 Tested up to: 3.5
 Stable tag: 1.2
