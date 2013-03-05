@@ -20,7 +20,7 @@ LenSlider is a WordPress plugin for creation of visual sliders, carousels or sli
 
 = Feel LenSlider2 power! =
 LenSlider2 has been considerably enhanced with regard to users opinions and plans that were set right from the start.
-**Please give me your thinks/ideas/problems via following methods**
+**Please give me your thoughts/ideas(also sliders ideas)/problems to improve the plugin via following methods**
 * [LenSlider standalone forum](http://www.lenslider.com/forum/)
 * [Suggest idea form](http://www.lenslider.com/suggest-idea/)
 * [Report bug form](http://www.lenslider.com/report-bug/)
