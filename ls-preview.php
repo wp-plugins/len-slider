@@ -1,4 +1,6 @@
-<?php require("../../../wp-load.php");
+<?php
+require("../../../wp-load.php");
+if(!is_user_logged_in() || !current_user_can(LenSlider::$capability)) die('-1');
 $slidernum = strtolower($_GET['slidernum']);
 $slider_settings = LenSlider::lenslider_get_slider_settings($slidernum);
 $skin_name = $slider_settings['ls_slider_skin'];
@@ -14,17 +16,18 @@ remove_action('wp_footer','wp_admin_bar_render',1000);
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel="stylesheet" type="text/css" media="all" href="<?php bloginfo('stylesheet_url');?>" />
     <?php
+    $site_url = site_url();
     if(!empty($skinObjStatic->cssFiles) && is_array($skinObjStatic->cssFiles)) {
         foreach ($skinObjStatic->cssFiles as $filename) {
             $reg_name = str_ireplace(".css", '', basename($filename)."-{$skin_name}");
-            wp_register_style($reg_name, str_ireplace(ABSPATH, LenSlider::$siteurl."/", $filename));
+            wp_register_style($reg_name, str_ireplace(ABSPATH, $site_url."/", $filename));
             wp_enqueue_style($reg_name);
         }
     }
     if(!empty($skinObjStatic->jsFiles) && is_array($skinObjStatic->jsFiles)) {
         foreach ($skinObjStatic->jsFiles as $filename) {
             $reg_name = $reg_name = str_ireplace(".js", '', basename($filename)."-{$skin_name}");
-            wp_register_script($reg_name, str_ireplace(ABSPATH, LenSlider::$siteurl."/", $filename), array(), false, true);
+            wp_register_script($reg_name, str_ireplace(ABSPATH, $site_url."/", $filename));
             wp_enqueue_script($reg_name);
         }
     }
@@ -33,7 +36,7 @@ remove_action('wp_footer','wp_admin_bar_render',1000);
     ?>
 </head>
 <body>
-    <?php LenSlider::lenslider_output_slider($slidernum, true, false);?>
+    <?php if(class_exists('LenSlider')) LenSlider::lenslider_output_slider($slidernum, true, false);?>
 <?php wp_footer()?>
 </body>
 </html>

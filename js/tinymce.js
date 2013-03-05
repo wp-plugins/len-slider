@@ -2,15 +2,15 @@
     tinymce.PluginManager.requireLangPack('lenslider');
     tinymce.create('tinymce.plugins.LenSliderPlugin', {
         init : function(ed, url) {
-            url = url.replace(/\/js/, '');
+            var url2 = url.replace(/js/, '');
             ed.addButton('lenslider', {
                 title : 'lenslider.title',
-                image : url+'/images/tinymce_button.png',
-                cmd   : 'lenslider'
+                image :  url2+'images/tinymce_button.png',
+                cmd   : 'mceLenSlider'
             });
-            ed.addCommand('lenslider', function() {
+            ed.addCommand('mceLenSlider', function() {
                 ed.windowManager.open({
-                    file       : url+'/tinymce.php',
+                    file       : url2+'tinymce.php',
                     width      : 350,
                     height     : 120,
                     inline     : 1,
@@ -30,9 +30,9 @@
             return {
                 longname  : 'LenSlider shortcode insert',
                 author    : 'Igor Sazonov',
-                authorurl : 'http://lenslider.com/',
-                infourl   : 'http://lenslider.com/',
-                version   : '1.0'
+                authorurl : 'http://www.lenslider.com/',
+                infourl   : 'http://www.lenslider.com/',
+                version   : '2.0'
             };
         }
     });
