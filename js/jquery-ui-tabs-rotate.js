@@ -18,8 +18,8 @@
 			var rotate = self._rotate || ( self._rotate = function( e ) {
 				clearTimeout( self.rotation );
 				self.rotation = setTimeout(function() {
-					var t = o.selected;
-					self.select( ++t < self.anchors.length ? t : 0 );
+					var t = o.active;
+					self.option( "active",  ++t < self.anchors.length ? t : 0 );
 				}, ms );
 
 				if ( e ) {
@@ -34,19 +34,19 @@
 					}
 				}
 				: function( e ) {
-					t = o.selected;
+					t = o.active;
 					rotate();
 				});
 
 			// start rotation
 			if ( ms ) {
-				this.element.bind( "tabsshow", rotate );
+				this.element.bind( "tabsactivate", rotate );
 				this.anchors.bind( o.event + ".tabs", stop );
 				rotate();
 			// stop rotation
 			} else {
 				clearTimeout( self.rotation );
-				this.element.unbind( "tabsshow", rotate );
+				this.element.unbind( "tabsactivate", rotate );
 				this.anchors.unbind( o.event + ".tabs", stop );
 				delete this._rotate;
 				delete this._unrotate;
