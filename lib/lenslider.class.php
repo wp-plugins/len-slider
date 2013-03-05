@@ -1175,9 +1175,11 @@ class LenSlider {
     protected function _lenslider_get_enabled_sliders_data() {
         $ret_array = array();
         $tmp_set = array();
-        foreach ($this->_enabledSliders as $slidernum) {
-            $ret_array['settings'][$slidernum] = $tmp_set = array_merge($tmp_set, $this->_sliders_array[$slidernum][self::$settingsTitle]);//die(var_dump($this->_sliders_array[$slidernum][self::$settingsTitle]));
-            $ret_array['skins'][] = $tmp_set[self::$skinName];
+        if(!empty($this->_enabledSliders) && is_array($this->_enabledSliders)) {
+            foreach ($this->_enabledSliders as $slidernum) {
+                $ret_array['settings'][$slidernum] = $tmp_set = array_merge($tmp_set, $this->_sliders_array[$slidernum][self::$settingsTitle]);//die(var_dump($this->_sliders_array[$slidernum][self::$settingsTitle]));
+                $ret_array['skins'][] = $tmp_set[self::$skinName];
+            }
         }
         return $ret_array;
     }
