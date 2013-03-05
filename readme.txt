@@ -19,7 +19,12 @@ LenSlider is a WordPress plugin for creation of visual sliders, carousels or sli
 * If you find this plugin useful to you, please consider [**making a small donation**](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KAGVMDNSS8EEN) to help contribute to my time invested and to further development. **Because it is hard to continue development and support for this free plugin** without contributions from users like you. Your donation will help encourage and support the plugin's continued development and better user support.
 
 = Feel LenSlider2 power! =
-LenSlider2 has been considerably enhanced with regard to users opinions and plans that were set right from the start. 
+LenSlider2 has been considerably enhanced with regard to users opinions and plans that were set right from the start.
+**Please give me your thinks/ideas/problems via following methods**
+* [LenSlider standalone forum](http://www.lenslider.com/forum/)
+* [Suggest idea form](http://www.lenslider.com/suggest-idea/)
+* [Report bug form](http://www.lenslider.com/report-bug/)
+* [WordPress.org support](http://wordpress.org/support/plugin/len-slider)
 
 = Requirements =
 * WordPress version 3.3 and higher, **highly recomended 3.5 version**
