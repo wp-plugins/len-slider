@@ -64,7 +64,7 @@ function lenslider_slider_page() {
                         <div id="titlediv">
                             <div id="titlewrap">
                                 <label for="title" style="cursor: pointer"><?php printf( __( 'Slider #%s title', 'lenslider' ), $slidernum );?></label>
-                                <input type="text" name="slset[<?php echo $slidernum;?>][<?php echo LenSlider::$sliderComment;?>]" size="30" value="<?php echo $settings_array[LenSlider::$sliderComment];?>" id="title" autocomplete="off" />
+                                <input type="text" name="slset[<?php echo $slidernum;?>][<?php echo LenSlider::$sliderComment;?>]" size="30" value="<?php echo (array_key_exists(LenSlider::$sliderComment, $settings_array) && !empty($settings_array[LenSlider::$sliderComment]))?$settings_array[LenSlider::$sliderComment]:"";?>" id="title" autocomplete="off" />
                             </div>
                         </div><!-- /titlediv -->
                         <ul id="slidernum_<?php echo $slidernum;?>" class="ls-sortable meta-box-sortables">
@@ -127,8 +127,8 @@ function lenslider_slider_page() {
                                         </div>
                                         <div class="misc-pub-section">
                                             <select class="ls_switch" name="slset[<?php echo $slidernum;?>][<?php echo LenSlider::$sliderDisenName;?>]">
-                                                <option value="1"<?php selected($settings_array[LenSlider::$sliderDisenName], 1);?>><?php _e('Enabled', 'lenslider');?></option>
-                                                <option value="0"<?php selected($settings_array[LenSlider::$sliderDisenName], 0);?>><?php _e('Disabled', 'lenslider');?></option>
+                                                <option value="1"<?php (array_key_exists(LenSlider::$sliderDisenName, $settings_array) && !empty($settings_array[LenSlider::$sliderDisenName]))?selected($settings_array[LenSlider::$sliderDisenName], 1):"";?>><?php _e('Enabled', 'lenslider');?></option>
+                                                <option value="0"<?php (array_key_exists(LenSlider::$sliderDisenName, $settings_array) && !empty($settings_array[LenSlider::$sliderDisenName]))?selected($settings_array[LenSlider::$sliderDisenName], 0):"";?>><?php _e('Disabled', 'lenslider');?></option>
                                             </select>
                                         </div>
                                         <div class="misc-pub-section" style="background:#c5ffb8">
