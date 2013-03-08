@@ -568,7 +568,7 @@
                 jQuery.post(ajaxurl,
                     {action:'ls_welcome_panel',ls_welcomepanelnonce:jQuery('#ls_welcomepanelnonce').val()},
                     function(data) {
-                        if(data == 1) jQuery("#ls-welcome-panel").hide();
+                        if(data == 1 || data == '-1') jQuery("#ls-welcome-panel").hide();
                     }
                 );
                 return false;

@@ -27,7 +27,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '2.0.3';
+    static $version                = '2.0.4';
     static $bannersOption          = 'lenslider_banners';
     static $settingsTitle          = 'settings';
     static $bannerWidthName        = 'ls_banner_width';
@@ -179,13 +179,12 @@ class LenSlider {
     
     /*---------------INITS METHODS---------------*/
     public function lenslider_register_activation_hook() {
-        $user_id = get_current_user_id();
         add_option(self::$bannersOption);
         if(!array_key_exists(self::$nowVersionName, $this->ls_settings)) $this->_lenslider_set_sliders_banners_active();
         update_option(self::$settingsOption, array_merge($this->_settingsDefault, $this->ls_settings));
-        add_user_meta($user_id, self::$ls_welcome_umeta, 1, true);
+        self::_lenslider_set_users_meta(self::$ls_welcome_umeta, 1, 'administrator');
+        self::_lenslider_set_users_meta(self::$ls_sys_umeta, 1, 'administrator');
         add_role(self::$_role, self::$_roleName, array(self::$capability));
-        add_user_meta($user_id, self::$ls_sys_umeta, 1, true);
         $role = get_role('administrator');
         $role->add_cap(self::$capability);
         $this->_leslider_check_unused_skins_to_default();
@@ -194,12 +193,11 @@ class LenSlider {
     }
 
     public static function lenslider_plugin_deactivate() {
-        $user_id = get_current_user_id();
         remove_role(self::$_role);
         $role = get_role('administrator');
         $role->remove_cap(self::$capability);
-        update_user_meta($user_id, self::$ls_welcome_umeta, 1);
-        update_user_meta($user_id, self::$ls_sys_umeta, 1);
+        self::_lenslider_set_users_meta(self::$ls_sys_umeta, 1, 'administrator', 'update');
+        self::_lenslider_set_users_meta(self::$ls_sys_umeta, 1, 'administrator', 'update');
     }
     
     public static function lenslider_plugin_uninstall() {
@@ -208,7 +206,6 @@ class LenSlider {
             exit();
         }*/
         
-        $user_id = get_current_user_id();
         $sliders_array = self::lenslider_get_array_from_wp_options(self::$bannersOption);
         if(!empty($sliders_array) && is_array($sliders_array)) {
             foreach (array_keys($sliders_array) as $slider_k) {
@@ -221,8 +218,8 @@ class LenSlider {
         if(!file_exists($skins_custom_catalog)) self::_lenslider_delete_dir($skins_custom_catalog);
         remove_action('lenslider_banners_processing', array(&$this, 'lenslider_banners_processing'));
         self::lenslider_plugin_deactivate();
-        delete_user_meta($user_id, self::$ls_sys_umeta);
-        delete_user_meta($user_id, self::$ls_welcome_umeta);
+        self::_lenslider_set_users_meta(self::$ls_sys_umeta, 1, 'administrator', 'delete');
+        self::_lenslider_set_users_meta(self::$ls_welcome_umeta, 1, 'administrator', 'delete');
         self::_lenslider_dismiss_pointers();
     }
     
@@ -249,7 +246,7 @@ class LenSlider {
                 }
                 if($hndl == 'jquery-ui-spinner' && version_compare($current_wp_ver, 3.5, '<')) {
                     wp_deregister_script($hndl);
-                    wp_register_script($hndl, plugins_url("js/ui19/".str_ireplace("-", ".", $hndl).".min.js", $this->indexFile), self::$_requiredAdminJSHandles);
+                    wp_register_script($hndl, plugins_url("js/ui19/".str_ireplace("-", ".", $hndl).".min.js", $this->indexFile));
                 }
                 wp_enqueue_script($hndl);
             }
@@ -661,7 +658,10 @@ class LenSlider {
             )
         );
         if(!empty($page)) {
-            if(!empty($ret_array[$page])) return $ret_array[$page];
+            if(!empty($ret_array[$page])) {
+                if(!array_key_exists('position', $ret_array[$page]) || empty($ret_array[$page]['position'])) $ret_array[$page]['position'] = '';
+                return $ret_array[$page];
+            }
         } else return $ret_array;
         return false;
     }
@@ -669,7 +669,7 @@ class LenSlider {
     public function lenslider_admin_head() {
         if(isset($_GET['page'])) $page = esc_attr($_GET['page']);
         if(isset($_GET['slidernum'])) $slidernum = esc_attr($_GET['slidernum']);
-        if($page == self::$indexPage) $page = self::$indexPointer;
+        if(!empty($page) && $page == self::$indexPage) $page = self::$indexPointer;
         if($this->_lenslider_is_plugin_page()) {
             $arr = array(
                 'yes' => __('Yes', 'lenslider'),
@@ -1035,12 +1035,12 @@ class LenSlider {
                 $ret_echo .= "<strong>";
                 $ret_echo .= ($fatal)?__("LenSlider can't works fine with your PHP settings", 'lenslider'):__("Some <u>not fatal</u> errors found", 'lenslider');
                 $ret_echo .= ":</strong><br />";
-                if($arr['phpver'])  $ret_echo_arr[] = sprintf(__("Your php version is <strong>%s</strong>. You need <strong>PHP 5.2+ version</strong> for stable plugin work, so you need to install/update the one for stable work.", 'lenslider'), $arr['phpver']);
-                if($arr['gd'])      $ret_echo_arr[] = __("PHP GD library is not installed on your web server! You need to install it.", 'lenslider');
-                if($arr['ziparc'])  $ret_echo_arr[] = __("ZipClass class not exists. So you can't upload skins zip-archives. You need update your PHP version to 5.2+ version or add ZipArchive class manually.", 'lenslider');
-                if($arr['glob'])    $ret_echo_arr[] = __("PHP function <a href=\"http://php.net/manual/en/function.glob.php\" target=\"_blank\">glob()</a> not exists. It's bad: you'll not has access for skins against <strong>default</strong>. There are much reasons for it, google the problem.", 'lenslider');
-                if($arr['wpver'])   $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>. Recommended is <strong>WordPress 3.5</strong> version for right output sliders, but it's <strong>not fatal</strong> if all works fine for you. <strong>LenSlider2</strong> has 3.5 less compatibility, but it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
-                if($arr['wpver33']) $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>, it's even less than <strong>WordpPess 3.3</strong>. Recommended is <strong>WordPress 3.5</strong> or <strong>3.3+</strong> version for right output sliders, your WordPress version is too old and <strong>this is fatal</strong>, so it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
+                if(array_key_exists('phpver', $arr)  && !empty($arr['phpver']))  $ret_echo_arr[] = sprintf(__("Your php version is <strong>%s</strong>. You need <strong>PHP 5.2+ version</strong> for stable plugin work, so you need to install/update the one for stable work.", 'lenslider'), $arr['phpver']);
+                if(array_key_exists('gd', $arr)      && !empty($arr['gd']))      $ret_echo_arr[] = __("PHP GD library is not installed on your web server! You need to install it.", 'lenslider');
+                if(array_key_exists('ziparc', $arr)  && !empty($arr['ziparc']))  $ret_echo_arr[] = __("ZipClass class not exists. So you can't upload skins zip-archives. You need update your PHP version to 5.2+ version or add ZipArchive class manually.", 'lenslider');
+                if(array_key_exists('glob', $arr)    && !empty($arr['glob']))    $ret_echo_arr[] = __("PHP function <a href=\"http://php.net/manual/en/function.glob.php\" target=\"_blank\">glob()</a> not exists. It's bad: you'll not has access for skins against <strong>default</strong>. There are much reasons for it, google the problem.", 'lenslider');
+                if(array_key_exists('wpver', $arr)   && !empty($arr['wpver']))   $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>. Recommended is <strong>WordPress 3.5</strong> version for right output sliders, but it's <strong>not fatal</strong> if all works fine for you. <strong>LenSlider2</strong> has 3.5 less compatibility, but it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
+                if(array_key_exists('wpver33', $arr) && !empty($arr['wpver33'])) $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>, it's even less than <strong>WordpPess 3.3</strong>. Recommended is <strong>WordPress 3.5</strong> or <strong>3.3+</strong> version for right output sliders, your WordPress version is too old and <strong>this is fatal</strong>, so it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
                 if(!empty($ret_echo) && !empty($ret_echo_arr) && is_array($ret_echo_arr)) {
                     $r = $ret_echo."<ul>";
                     foreach ($ret_echo_arr as $s) {
@@ -1355,6 +1355,27 @@ class LenSlider {
         if(!$only_update) return $this->lenslider_get_attachment_params($id)->httpPath;
     }
     
+    protected static function _lenslider_set_users_meta($meta_name, $meta_value, $role, $action = 'add') {
+        $args = array('role' => $role);
+        $users = get_users($args);
+        if(!empty($users) && is_array($users)) {
+            foreach ($users as $user) {
+                switch ($action) {
+                    case 'add':
+                        add_user_meta($user->ID, $meta_name, $meta_value, true);
+                        break;
+                    case 'update':
+                        update_user_meta($user->ID, $meta_name, $meta_value);
+                        break;
+                    case 'delete':
+                        delete_user_meta($user->ID, $meta_name);
+                        break;
+                }
+            }
+        }
+    }
+
+
     /*protected function _lenslider_update_attachment_urltitle($id, $newtitle, $uid) {
         $obj = $this->lenslider_get_attachment_params($id);
         $newname = sanitize_title(strtolower($newtitle." ".$uid)).".".$obj->ext;
@@ -2382,7 +2403,7 @@ class LenSlider {
                                 'textarea_name' => "binfo[{$slidernum}][{$k}][]",
                                 'textarea_rows' => 15
                             );
-                            $settings_array['media_buttons'] = ($v['media_buttons'])?true:false;
+                            $settings_array['media_buttons'] = (!empty($v['media_buttons']))?true:false;
                             $ret .= $this->lenslider_wp_editor($v['value'], "{$k}_{$slidernum}_{$n}", $settings_array);
                         } else {
                             $ret .= "<textarea style=\"width:100%\" id=\"{$k}_{$slidernum}_{$n}\"";
@@ -2422,6 +2443,7 @@ class LenSlider {
                         $ret .= (!empty($array[$k]['ext']))?"40":"50";
                         $ret .= "%\">";
                         if(!empty($array[$k]['type'])) {
+                            $settings_array[$k] = (array_key_exists($k, $settings_array) && !empty($settings_array[$k]))?$settings_array[$k]:"";
                             switch($array[$k]['type']) {
                                 case 'input':
                                     if(empty($array[$k]['size'])) $array[$k]['size'] = 5;
@@ -2531,7 +2553,7 @@ class LenSlider {
     /*вывод баннеров для слайдера*/
     public function lenslider_banners_items($slidernum, $new_slider = true, $skinObj = false) {
         $return = "";
-        $count_enabled = intval(count($this->_sliders_array[$slidernum][self::$bannerDisenName]));
+        $count_enabled = (!empty($this->_sliders_array[$slidernum]))?intval(count($this->_sliders_array[$slidernum][self::$bannerDisenName])):1;
         $array_merge = ($skinObj && $skinObj->bannerMergeArray)?$skinObj->bannerMergeArray:false;
         $array_unset = ($skinObj && $skinObj->bannerUnsetArray)?$skinObj->bannerUnsetArray:false;
         if(!$new_slider) {
@@ -2597,10 +2619,10 @@ class LenSlider {
     
     public function lenslider_banner_item($n, $slidernum, $banners_limit, $count_enabled = false, $array_merge = false, $array_unset = false, $has_thumb = false, $static_first = false, $array = false, $attachment_id = 0, $img_thumb = false, $attachment_thumb_id = 0) {
         $nn=$n+1;
-        $settings_array = $this->_sliders_array[$slidernum][self::$settingsTitle];
+        $settings_array = (!empty($this->_sliders_array[$slidernum]))?$this->_sliders_array[$slidernum][self::$settingsTitle]:array();
         $banner_array   = (!empty($attachment_id))?$this->_sliders_array[$slidernum][$attachment_id]:array();
         $lmman_dis      = (!empty($banner_array['bannertype']) || $attachment_id)?" lmdis":"";
-        $img            = ($banner_array['path'])?$this->_lenslider_decode_url($banner_array['path']):false;
+        $img            = (array_key_exists('path', $banner_array) && !empty($banner_array['path']))?$this->_lenslider_decode_url($banner_array['path']):false;
         $img_thumb      = ($has_thumb && $banner_array['path_thumb'])?$this->_lenslider_decode_url($banner_array['path_thumb']):false;
         $url_type       = (!empty($banner_array['url_type']))?$banner_array['url_type']:'lsurl';
         $url_type_id    = (!empty($banner_array['url_type_id']))?$banner_array['url_type_id']:false;
@@ -2640,11 +2662,11 @@ class LenSlider {
                                     <div class=\"ls_metabox2 ls_rounded ls_shadow\">
                                         <div class=\"ls_box_header\"><span class=\"ls_title\">".sprintf(__("Banner %d main content", 'lenslider'), $nn)."</span></div>
                                         <div class=\"ls_box_content\">
-                                            <div id=\"lup_{$n}\" class=\"bimagehide_{$n}\"";$ret.=($banner_array['bannertype'] && $banner_array['bannertype'] != 'image')?" style=\"display:none;\"":"";$ret.=">
+                                            <div id=\"lup_{$n}\" class=\"bimagehide_{$n}\"";$ret.=(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image')?" style=\"display:none;\"":"";$ret.=">
                                                 <div class=\"bimge_div\" id=\"bimge_image_div_{$slidernum}_{$n}\">
                                                     <div class=\"abs bload2 ls_media_abs_{$slidernum}_{$n}\" style=\"display:none\"></div>
                                                     <a class=\"bimge_content ls-cont-uploadphoto ls_media_upload b_dashed\" id=\"ls_media_upload_{$slidernum}_{$n}_{$attachment_id}\" href=\"javascript:;\"";
-                                                    if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || (!$banner_array['bannertype'] && $attachment_id)) $ret .= " style=\"display:none;\"";
+                                                    if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || (empty($banner_array['bannertype']) && $attachment_id)) $ret .= " style=\"display:none;\"";
                                                     $ret .= "></a>
                                                     <div id=\"ls-cont-media-mu-{$n}\"";
                                                         if(!$img && !$attachment_id) $ret .= " style=\"display:none;\"";
@@ -2655,9 +2677,9 @@ class LenSlider {
                                                 $ret .= "
                                                 </div>
                                                 <div class=\"ls-img-code\" id=\"ls-img-code-{$n}\"";
-                                                    if(($banner_array['bannertype'] && $banner_array['bannertype'] != 'image') || !$attachment_id) $ret .= " style=\"display:none\"";
+                                                    if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') || empty($attachment_id)) $ret .= " style=\"display:none\"";
                                                     $ret .= ">";
-                                                    if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || !$banner_array['bannertype']) $ret .= "<code style=\"display:block\">".str_ireplace(self::$siteurl, '', $img)."</code>";
+                                                    if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || empty($banner_array['bannertype'])) $ret .= "<code style=\"display:block\">".str_ireplace(self::$siteurl, '', $img)."</code>";
                                                 $ret .= "
                                                 </div>
                                                 <label class=\"ls_label\" for=\"ls-bimg-alt-{$n}\">".__('Alt Text for SEO', 'lenslider').":</label><br />
@@ -2674,10 +2696,10 @@ class LenSlider {
                                                     <div class=\"ls-relative\" style=\"padding-right:25px\">
                                                         <a class=\"ls-crop-gal ls-crop-gal-{$n} ls-crop-gal-width";
                                                         if(!$attachment_id || (!empty($banner_array['imageprior']) && $banner_array['imageprior'] == 'width') || !$banner_array['imageprior']) $ret .= " act";
-                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image' && $attachment_id) || (!$banner_array['bannertype'] && $attachment_id)) $ret .= " disb";
+                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image' && $attachment_id) || (empty($banner_array['bannertype']) && !empty($attachment_id))) $ret .= " disb";
                                                         $ret .= "\" href=\"javascript:;\"></a>
                                                         <input type=\"text\" class=\"ls_input\"";
-                                                        if($banner_array['bannertype'] != 'image') $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
+                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
                                                         $ret .= " style=\"width:100%\" value=\"";
                                                         $ret .= (!empty($banner_array['bannerwidth']))?$banner_array['bannerwidth']:$this->bannerWidth;
                                                         $ret .= "\"";
@@ -2697,7 +2719,7 @@ class LenSlider {
                                                         if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image')) $ret .= " disb";
                                                         $ret .= "\" href=\"javascript:;\"></a>
                                                         <input type=\"text\" class=\"ls_input\"";
-                                                        if($banner_array['bannertype'] != 'image') $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
+                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
                                                         $ret .= " style=\"width:100%\" value=\"";$ret .= (!empty($banner_array['bannerheight']))?$banner_array['bannerheight']:$this->bannerHeight;$ret .= "\"";
                                                         if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " disabled=\"disabled\"";
                                                         $ret .= " /><input type=\"hidden\" class=\"ls_hidden\"";
@@ -2715,20 +2737,20 @@ class LenSlider {
                                                 <!--input type=\"text\" class=\"ls_input\" id=\"ls-bimg-crop-{$n}\" style=\"width:100%\" value=\"\" /-->";
                                                 //$ret .= self::lenslider_dropdown_crop_vars("binfo[{$slidernum}][bannercrop][]", " id=\"ls-bimg-crop-{$n}\" style=\"width:100%\"", $banner_array['bannercrop']);
                                                 $ret .= "<input type=\"hidden\" id=\"imageprior_{$n}\" name=\"binfo[{$slidernum}][imageprior][]\" value=\"";
-                                                if($banner_array['bannertype'] != 'image') $ret .= "width";
+                                                if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') $ret .= "width";
                                                 if(!empty($banner_array['imageprior'])) $ret .= $banner_array['imageprior'];
                                                 $ret .= "\" />
                                             </div><!--bimagehide-->
-                                            <div id=\"lto_{$n}\" class=\"bimagehide_{$n}\"";$ret.=(($banner_array['bannertype'] && $banner_array['bannertype'] != 'text') || !$banner_array['bannertype'])?" style=\"display:none;\"":"";$ret.=">
+                                            <div id=\"lto_{$n}\" class=\"bimagehide_{$n}\"";$ret.=((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'text') || empty($banner_array['bannertype']))?" style=\"display:none;\"":"";$ret.=">
                                                 <div class=\"bimge_div\" id=\"bimge_text_div_{$slidernum}_{$n}\">
                                                     <div class=\"abs bload2 ls_media_abs_{$slidernum}_{$n}\" style=\"display:none\"></div>
                                                     <a class=\"bimge_content ls-cont-textonly ls_textonly b_dashed";
-                                                    if($banner_array['bannertype'] && $banner_array['bannertype'] == 'text') $ret .= " act";
+                                                    if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'text') $ret .= " act";
                                                     $ret .= "\" id=\"ls_textonly_{$slidernum}_{$n}_{$attachment_id}\" href=\"javascript:;\"></a>
                                                 </div><!--bimge_div-->
                                             </div><!--bimagehide-->
                                             <!--div id=\"lum_{$n}\" class=\"bimagehide_{$n}\" style=\"display:none\"><a class=\"bimge_content b_dashed ls-cont-uploadmovie\" href=\"javascript:;\"></a></div-->
-                                            <div id=\"lyt_{$n}\" class=\"bimagehide_{$n}\"";$ret.=(($banner_array['bannertype'] && $banner_array['bannertype'] != 'youtube') || !$banner_array['bannertype'])?" style=\"display:none;\"":"";$ret.=">
+                                            <div id=\"lyt_{$n}\" class=\"bimagehide_{$n}\"";$ret.=((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'youtube') || empty($banner_array['bannertype']))?" style=\"display:none;\"":"";$ret.=">
                                                 <div class=\"bimge_div\" id=\"bimge_yt_div_{$slidernum}_{$n}\">
                                                     <div class=\"abs bload2 ls_media_abs_{$slidernum}_{$n}\" style=\"display:none\"></div>
                                                     
@@ -2748,7 +2770,7 @@ class LenSlider {
                                                 <label class=\"ls_label\" for=\"ls-yt-url-{$n}\">".__('YouTube link', 'lenslider').":</label>
                                                 <table border=\"0\" width=\"100%\"></tr><td><input type=\"text\" class=\"ls_input\"";
                                                 if(empty($banner_array['banneryoutube'])) $ret .= " id=\"ls-yt-url-{$n}\" name=\"binfo[{$slidernum}][banneryoutube][]\"";
-                                                $ret .= ($banner_array['bannertype'] && $banner_array['bannertype'] == 'youtube')?" disabled=\"disabled\"":"";
+                                                $ret .= (!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'youtube')?" disabled=\"disabled\"":"";
                                                 $ret .= " style=\"width:100%\" value=\"";
                                                 if(!empty($banner_array['banneryoutube'])) $ret .= $banner_array['banneryoutube'];
                                                 $ret .= "\" /><input type=\"hidden\" class=\"ls_hidden\"";
@@ -2756,7 +2778,7 @@ class LenSlider {
                                                 $ret .= " value=\"";
                                                 if(!empty($banner_array['banneryoutube'])) $ret .= $banner_array['banneryoutube'];
                                                 $ret .= "\" /></td><td><button type=\"button\" id=\"yt_button_{$slidernum}_{$n}\" class=\"button yt_button\"";
-                                                $ret .= ($banner_array['bannertype'] && $banner_array['bannertype'] == 'youtube')?" disabled=\"disabled\"":"";
+                                                $ret .= (!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'youtube')?" disabled=\"disabled\"":"";
                                                 $ret .= ">".__('load', 'lenslider')."</button></td></tr></table>
                                                 <label class=\"ls_label\">".__('Width &times; Height (pixels)', 'lenslider').":</label><br />
                                                 <table border=\"0\" width=\"100%\"><tr>
@@ -2775,7 +2797,7 @@ class LenSlider {
                                                 </td>
                                                 </tr></table>
                                             </div><!--bimagehide-->
-                                            <div id=\"lvm_{$n}\" class=\"bimagehide_{$n}\"";$ret.=(($banner_array['bannertype'] && $banner_array['bannertype'] != 'vimeo') || !$banner_array['bannertype'])?" style=\"display:none;\"":"";$ret.=">
+                                            <div id=\"lvm_{$n}\" class=\"bimagehide_{$n}\"";$ret.=((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'vimeo') || empty($banner_array['bannertype']))?" style=\"display:none;\"":"";$ret.=">
                                                 <div class=\"bimge_div\" id=\"bimge_vm_div_{$slidernum}_{$n}\">
                                                     <div class=\"abs bload2 ls_media_abs_{$slidernum}_{$n}\" style=\"display:none\"></div>
                                                     <div class=\"bimge_content b_dashed ls-cont-uploadvimeo\" id=\"ls_vm_upload_{$slidernum}_{$n}\"";
@@ -2803,7 +2825,7 @@ class LenSlider {
                                                 $ret .= " value=\"";
                                                 if(!empty($banner_array['bannervimeo'])) $ret .= $banner_array['bannervimeo'];
                                                 $ret .= "\" /></td><td><button type=\"button\" id=\"vm_button_{$slidernum}_{$n}\" class=\"button vm_button\"";
-                                                $ret .= ($banner_array['bannertype'] && $banner_array['bannertype'] == 'vimeo')?" disabled=\"disabled\"":"";
+                                                $ret .= (!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'vimeo')?" disabled=\"disabled\"":"";
                                                 $ret .= ">".__('load', 'lenslider')."</button></td></tr></table>
                                                 <label class=\"ls_label\">".__('Width &times; Height (pixels)', 'lenslider').":</label><br />
                                                 <table border=\"0\" width=\"100%\"><tr>
@@ -2844,11 +2866,11 @@ class LenSlider {
                                     </div><!--ls_metabox2-->
                                     <div class=\"ls_metabox_manage\">
                                         <ul>
-                                            <li class=\"limman_{$n}";$ret.=(!$banner_array['bannertype'] || (!$banner_array['bannertype'] && !$attachment_id) || $banner_array['bannertype'] == 'image')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-image{$lmman_dis}\" href=\"#lup_{$n}\"></a></li>
-                                            <li class=\"limman_{$n}";$ret.=($banner_array['bannertype'] == 'text')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-text{$lmman_dis}\" href=\"#lto_{$n}\"></a></li>
+                                            <li class=\"limman_{$n}";$ret.=(empty($banner_array['bannertype']) || (!$banner_array['bannertype'] && empty($attachment_id)) || $banner_array['bannertype'] == 'image')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-image{$lmman_dis}\" href=\"#lup_{$n}\"></a></li>
+                                            <li class=\"limman_{$n}";$ret.=(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'text')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-text{$lmman_dis}\" href=\"#lto_{$n}\"></a></li>
                                             <!--li class=\"limman_{$n}\"><a class=\"lmman lmman_{$n} ls-uploadmovie{$lmman_dis}\" href=\"#lum_{$n}\"></a></li-->
-                                            <li class=\"limman_{$n}";$ret.=($banner_array['bannertype'] == 'youtube')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-youtube{$lmman_dis}\" href=\"#lyt_{$n}\"></a></li>
-                                            <li class=\"limman_{$n}";$ret.=($banner_array['bannertype'] == 'vimeo')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-vimeo{$lmman_dis}\" href=\"#lvm_{$n}\"></a></li>
+                                            <li class=\"limman_{$n}";$ret.=(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'youtube')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-youtube{$lmman_dis}\" href=\"#lyt_{$n}\"></a></li>
+                                            <li class=\"limman_{$n}";$ret.=(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'vimeo')?" act":"";$ret.="\"><a class=\"lmman lmman_{$n} ls-type-vimeo{$lmman_dis}\" href=\"#lvm_{$n}\"></a></li>
                                         </ul><div class=\"clear\"></div>
                                     </div><!--ls_metabox_manage-->
                                     <input type=\"hidden\" id=\"ls_image_mu_{$slidernum}_{$n}\" name=\"ls_image_mu[{$slidernum}][]\" value=\"{$attachment_id}\" />
