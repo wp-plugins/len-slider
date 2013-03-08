@@ -27,7 +27,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '2.0.1';
+    static $version                = '2.0.2';
     static $bannersOption          = 'lenslider_banners';
     static $settingsTitle          = 'settings';
     static $bannerWidthName        = 'ls_banner_width';
@@ -203,10 +203,10 @@ class LenSlider {
     }
     
     public static function lenslider_plugin_uninstall() {
-        if(!defined('WP_UNINSTALL_PLUGIN') || !WP_UNINSTALL_PLUGIN || dirname(WP_UNINSTALL_PLUGIN) != dirname(plugin_basename(__FILE__))) {
+        /*if(!defined('WP_UNINSTALL_PLUGIN') || !WP_UNINSTALL_PLUGIN || dirname(WP_UNINSTALL_PLUGIN) != dirname(plugin_basename(__FILE__))) {
             status_header(404);
             exit();
-        }
+        }*/
         
         $user_id = get_current_user_id();
         $sliders_array = self::lenslider_get_array_from_wp_options(self::$bannersOption);
@@ -667,45 +667,47 @@ class LenSlider {
     }
 
     public function lenslider_admin_head() {
-        $page = esc_attr($_GET['page']);
-        $slidernum = esc_attr($_GET['slidernum']);
-        if($page == self::$indexPage) $page = self::$indexPointer;
-        if($this->_lenslider_is_plugin_page()) {
-            $arr = array(
-                'yes' => __('Yes', 'lenslider'),
-                'no' => __('No', 'lenslider'),
-                'confirmTitle' => __('Confirm', 'lenslider'),
-                'warningTitle' => __('Warning', 'lenslider'),
-                'errorTitle' => __('Error', 'lenslider'),
-                'emptySizeStr' => __('Size is empty', 'lenslider'),
-                'fullBannersLimitError' => __('Banners limit is full', 'lenslider'),
-                'confirmText' => __('Are you sure?', 'lenslider'),
-                'skinSettingsConfirmStr' => __("Do you want to set skin settings for the slider?", 'lenslider'),
-                'ajaxNonce' => wp_create_nonce($this->plugin_basename.LOGGED_IN_KEY.site_url()),
-                'wp_version' => self::lenslider_get_wp_version(),
-                'user_id' => get_current_user_id(),
-                'wp_uploader_title' => __('LenSlider Media Manager', 'lenslider'),
-                'wp_uploader_button' => __('Select', 'lenslider')
-            );
-            echo "<script type=\"text/javascript\">
-                    jQuery(function() {
-                        lenSliderJSReady(".$this->_lenslider_is_plugin_page().", ".json_encode($this->allowed_url_strs).", ".json_encode($arr).");";
-                        if(self::_lenslider_check_pointer_issue($page)) {
-                            $pointer_array = self::_lenslider_wp_pointer_content($page);
-                            echo "ls_wp_pointer(\".ls_h2\", \"{$page}\", \"{$pointer_array['content']}\", \"{$pointer_array['position']}\", \"{$pointer_array['pointerWidth']}\");";
-                        }
-                        if(!empty($slidernum) && !empty($this->_sliders_array[$slidernum])) echo "jQuery(\"#".self::$bannersLimitName."_{$slidernum}\").spinner(\"option\", \"min\", {$this->_sliders_array[$slidernum][self::$settingsTitle][self::$bannersLimitName]});";
-                        echo "
-                    });
-                    </script>\n";
-        } else {
-            if(self::_lenslider_check_pointer_issue(self::$admPagesPointer)) {
-                $pointer_array = self::_lenslider_wp_pointer_content(self::$admPagesPointer);
+        if(isset($_GET['page']) && isset($_GET['slidernum'])) {
+            $page = esc_attr($_GET['page']);
+            $slidernum = esc_attr($_GET['slidernum']);
+            if($page == self::$indexPage) $page = self::$indexPointer;
+            if($this->_lenslider_is_plugin_page()) {
+                $arr = array(
+                    'yes' => __('Yes', 'lenslider'),
+                    'no' => __('No', 'lenslider'),
+                    'confirmTitle' => __('Confirm', 'lenslider'),
+                    'warningTitle' => __('Warning', 'lenslider'),
+                    'errorTitle' => __('Error', 'lenslider'),
+                    'emptySizeStr' => __('Size is empty', 'lenslider'),
+                    'fullBannersLimitError' => __('Banners limit is full', 'lenslider'),
+                    'confirmText' => __('Are you sure?', 'lenslider'),
+                    'skinSettingsConfirmStr' => __("Do you want to set skin settings for the slider?", 'lenslider'),
+                    'ajaxNonce' => wp_create_nonce($this->plugin_basename.LOGGED_IN_KEY.site_url()),
+                    'wp_version' => self::lenslider_get_wp_version(),
+                    'user_id' => get_current_user_id(),
+                    'wp_uploader_title' => __('LenSlider Media Manager', 'lenslider'),
+                    'wp_uploader_button' => __('Select', 'lenslider')
+                );
                 echo "<script type=\"text/javascript\">
                         jQuery(function() {
-                            ls_wp_pointer(\"#toplevel_page_len-slider-ls-index\", \"".self::$admPagesPointer."\", \"{$pointer_array['content']}\", ".json_encode(array('edge'=>'left','align'=>'left')).");
+                            lenSliderJSReady(".$this->_lenslider_is_plugin_page().", ".json_encode($this->allowed_url_strs).", ".json_encode($arr).");";
+                            if(self::_lenslider_check_pointer_issue($page)) {
+                                $pointer_array = self::_lenslider_wp_pointer_content($page);
+                                echo "ls_wp_pointer(\".ls_h2\", \"{$page}\", \"{$pointer_array['content']}\", \"{$pointer_array['position']}\", \"{$pointer_array['pointerWidth']}\");";
+                            }
+                            if(!empty($slidernum) && !empty($this->_sliders_array[$slidernum])) echo "jQuery(\"#".self::$bannersLimitName."_{$slidernum}\").spinner(\"option\", \"min\", {$this->_sliders_array[$slidernum][self::$settingsTitle][self::$bannersLimitName]});";
+                            echo "
                         });
-                        </script>";
+                        </script>\n";
+            } else {
+                if(self::_lenslider_check_pointer_issue(self::$admPagesPointer)) {
+                    $pointer_array = self::_lenslider_wp_pointer_content(self::$admPagesPointer);
+                    echo "<script type=\"text/javascript\">
+                            jQuery(function() {
+                                ls_wp_pointer(\"#toplevel_page_len-slider-ls-index\", \"".self::$admPagesPointer."\", \"{$pointer_array['content']}\", ".json_encode(array('edge'=>'left','align'=>'left')).");
+                            });
+                            </script>";
+                }
             }
         }
     }
@@ -1062,7 +1064,9 @@ class LenSlider {
     }
 
     public static function lenslider_get_array_from_wp_options($option_name) {
-        if(self::_lenslider_is_allowed_option($option_name)) return self::_lenslider_get_option($option_name);
+        if(get_option($option_name) && self::_lenslider_is_allowed_option($option_name)) return self::_lenslider_get_option($option_name);
+        if($option_name == self::$settingsOption) return self::lenslider_get_default_settings();
+        return array();
     }
     
     public static function lenslider_get_wp_version() {

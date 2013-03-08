@@ -31,6 +31,7 @@ function lenslider_slider_page() {
         $new_slider     = true;
         $skins_disabled = true;
         $settings_array = $ls->ls_settings;
+        if(empty($settings_array)) $settings_array = LenSlider::lenslider_get_default_settings();
         $skin_check     = $skin_name;
     }
     else {
@@ -44,9 +45,6 @@ function lenslider_slider_page() {
             <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
         </div-->
         
-        <?php
-        //$ww = getimagesize('/home/lmsservi/public_html/poverlsn5/wp-content/plugins/len-slider/images/youtube-lenslider.jpg');die(var_dump($ww));
-        //$ee = $ls->lenslider_simple_insert_attachment('youtube-lenslider.jpg');die(var_dump($ee));?>
         <a href="<?php echo admin_url("admin.php?page=".LenSlider::$indexPage);?>" style="text-decoration:none">&larr; <?php _e( 'Back to LenSlider sliders list', 'lenslider');?></a>
         <h2 class="ls_h2">
             <?php echo $title;?>
