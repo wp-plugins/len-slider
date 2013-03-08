@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: slider, carousel, slideshow, banners, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.3
 Tested up to: 3.5.1
-Stable tag: 2.0
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,12 +19,7 @@ LenSlider is a WordPress plugin for creation of visual sliders, carousels or sli
 * If you find this plugin useful to you, please consider [**making a small donation**](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KAGVMDNSS8EEN) to help contribute to my time invested and to further development. **Because it is hard to continue development and support for this free plugin** without contributions from users like you. Your donation will help encourage and support the plugin's continued development and better user support.
 
 = Feel LenSlider2 power! =
-LenSlider2 has been considerably enhanced with regard to users opinions and plans that were set right from the start.
-**Please give me your thoughts/ideas(also sliders ideas)/problems to improve the plugin via following methods**
-* [LenSlider standalone forum](http://www.lenslider.com/forum/)
-* [Suggest idea form](http://www.lenslider.com/suggest-idea/)
-* [Report bug form](http://www.lenslider.com/report-bug/)
-* [WordPress.org support](http://wordpress.org/support/plugin/len-slider)
+LenSlider2 has been considerably enhanced with regard to users opinions and plans that were set right from the start. 
 
 = Requirements =
 * WordPress version 3.3 and higher, **highly recomended 3.5 version**
@@ -134,6 +129,21 @@ If you switch on this option hints in the admin LenSlider will be shown in nice 
 5. Sliders admin manager. `Default` skin
 
 == Changelog ==
+
+Full list of changes you can see at [LenSlider roadmap page](http://www.lenslider.com/roadmap/)
+
+= 2.0.1 =
+- Fix for settings page
+- Fix for checking key in settings array
+
+= 2.0 =
+- New well UI design
+- WordPress-standart list table for Slider list & dedicated page for every slider
+- YouTube & Vimeo Support
+- Media Uploader Support (New for 3.5+ version and old via Thickbox)
+- Autorotate & autorotate delay managed in admin
+- Margins manager
+- Enable/disable for every banner
 
 = 1.2 =
 - js call admin fuction fix
