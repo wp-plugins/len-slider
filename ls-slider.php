@@ -8,7 +8,7 @@ function lenslider_slider_page() {
         if(wp_verify_nonce($_REQUEST['lenslider_slider_nonce'], $ls->plugin_basename.AUTH_KEY.$site_url) && check_admin_referer($ls->plugin_basename.AUTH_KEY.$site_url, 'lenslider_slider_nonce')) {
             do_action('lenslider_banners_processing', $slidernum, $_POST["bannerhidden"], $_POST['ls_image_mu'], $_POST['ls_image_thumb_mu'], $_POST["binfo"], $_POST["slset"]);
         } else {
-            wp_die( __('WordPress nonce not validate!', 'lenslider') );
+            wp_die(__('WordPress nonce not validate!', 'lenslider'));
             return;
         }
     }
@@ -45,11 +45,11 @@ function lenslider_slider_page() {
             <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
         </div-->
         
-        <a href="<?php echo admin_url("admin.php?page=".LenSlider::$indexPage);?>" style="text-decoration:none">&larr; <?php _e( 'Back to LenSlider sliders list', 'lenslider');?></a>
+        <a href="<?php echo admin_url("admin.php?page=".LenSlider::$indexPage);?>" style="text-decoration:none">&larr; <?php _e('Back to LenSlider sliders list', 'lenslider');?></a>
         <h2 class="ls_h2">
             <?php echo $title;?>
             <?php if(!$new_slider) :?>
-            <a href="<?php echo admin_url("admin.php?page=".LenSlider::$sliderPage."&slidernum=".LenSlider::lenslider_hash()."&lsnew=true");?>" class="add-new-h2 add_new_slider"><?php _e('Add New');?></a>
+            <a href="<?php echo admin_url("admin.php?page=".LenSlider::$sliderPage."&slidernum=".LenSlider::lenslider_hash()."&lsnew=true");?>" id="<?php echo LenSlider::lenslider_hash();?>" class="add-new-h2 add_new_slider"><?php _e('Add New');?></a>
             <?php endif;?>
         </h2>
         <?php if(!$empty) :?>
@@ -205,7 +205,7 @@ function lenslider_slider_page() {
             </div>
         </form>
         <?php else:?>
-            <?php echo LenSliderSkins::lenslider_skins_dropdown("new_slider_skin");?>
+            <?php echo LenSliderSkins::lenslider_skins_dropdown("new_slider_skin", false, "new_slider_skin");?>
             <br /><br /><a class="button button-hero add_new_slider" id="<?php echo LenSlider::lenslider_hash();?>" href="<?php echo admin_url("admin.php?page=".LenSlider::$sliderPage."&lsnew=true");?>"><?php _e('Select', 'lenslider');?></a>
         <?php endif;?>
     </div>
