@@ -27,7 +27,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '2.0.4';
+    static $version                = '2.0.5';
     static $bannersOption          = 'lenslider_banners';
     static $settingsTitle          = 'settings';
     static $bannerWidthName        = 'ls_banner_width';
@@ -2443,7 +2443,7 @@ class LenSlider {
                         $ret .= (!empty($array[$k]['ext']))?"40":"50";
                         $ret .= "%\">";
                         if(!empty($array[$k]['type'])) {
-                            $settings_array[$k] = (array_key_exists($k, $settings_array) && !empty($settings_array[$k]))?$settings_array[$k]:"";
+                            $settings_array[$k] = (!empty($settings_array[$k]))?$settings_array[$k]:"";
                             switch($array[$k]['type']) {
                                 case 'input':
                                     if(empty($array[$k]['size'])) $array[$k]['size'] = 5;
@@ -2489,7 +2489,7 @@ class LenSlider {
                                     $ret .= "<input name=\"slset[{$n_slider}][{$k}]\" type=\"checkbox\" id=\"{$k}_{$n_slider}\" class=\"ls_checkbox";
                                     if(!empty($array[$k]['class'])) $ret .= " {$array[$k]['class']}";
                                     $ret .= "\"";
-                                    if((array_key_exists($k, $settings_array) && !empty($settings_array[$k]) && ($settings_array[$k] == 1 || $settings_array[$k] == true)) && empty($array[$k]['invariable'])) $ret .= " checked=\"checked\"";
+                                    if((!empty($settings_array[$k]) && ($settings_array[$k] == 1 || $settings_array[$k] == true)) && empty($array[$k]['invariable'])) $ret .= " checked=\"checked\"";
                                     if(!empty($array[$k]['invariable']) && $array[$k]['invariable'] != 'off') $ret .= " checked=\"checked\"";
                                     //exception
                                     if(empty($settings_array[self::$hasAutoplay]) && $k == self::$autoplayHoverPause) $array[$k]['disabled'] = true;
@@ -2699,13 +2699,13 @@ class LenSlider {
                                                         if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image' && $attachment_id) || (empty($banner_array['bannertype']) && !empty($attachment_id))) $ret .= " disb";
                                                         $ret .= "\" href=\"javascript:;\"></a>
                                                         <input type=\"text\" class=\"ls_input\"";
-                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
+                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') || empty($banner_array['bannertype'])) $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
                                                         $ret .= " style=\"width:100%\" value=\"";
                                                         $ret .= (!empty($banner_array['bannerwidth']))?$banner_array['bannerwidth']:$this->bannerWidth;
                                                         $ret .= "\"";
                                                         if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " disabled=\"disabled\"";
                                                         $ret .= " /><input type=\"hidden\" class=\"ls_hidden\"";
-                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
+                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || empty($banner_array['bannertype'])) $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
                                                         $ret .= " value=\"";
                                                         if(!empty($banner_array['bannerwidth'])) $ret .= $banner_array['bannerwidth'];
                                                         $ret .= "\" />
@@ -2719,11 +2719,11 @@ class LenSlider {
                                                         if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image')) $ret .= " disb";
                                                         $ret .= "\" href=\"javascript:;\"></a>
                                                         <input type=\"text\" class=\"ls_input\"";
-                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
+                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') || empty($banner_array['bannertype'])) $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
                                                         $ret .= " style=\"width:100%\" value=\"";$ret .= (!empty($banner_array['bannerheight']))?$banner_array['bannerheight']:$this->bannerHeight;$ret .= "\"";
                                                         if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " disabled=\"disabled\"";
                                                         $ret .= " /><input type=\"hidden\" class=\"ls_hidden\"";
-                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
+                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || empty($banner_array['bannertype'])) $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
                                                         $ret .= " value=\"";
                                                         if(!empty($banner_array['bannerheight'])) $ret .= $banner_array['bannerheight'];
                                                         $ret .= "\" />
@@ -2737,7 +2737,7 @@ class LenSlider {
                                                 <!--input type=\"text\" class=\"ls_input\" id=\"ls-bimg-crop-{$n}\" style=\"width:100%\" value=\"\" /-->";
                                                 //$ret .= self::lenslider_dropdown_crop_vars("binfo[{$slidernum}][bannercrop][]", " id=\"ls-bimg-crop-{$n}\" style=\"width:100%\"", $banner_array['bannercrop']);
                                                 $ret .= "<input type=\"hidden\" id=\"imageprior_{$n}\" name=\"binfo[{$slidernum}][imageprior][]\" value=\"";
-                                                if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') $ret .= "width";
+                                                if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] != 'image') || empty($banner_array['bannertype'])) $ret .= "width";
                                                 if(!empty($banner_array['imageprior'])) $ret .= $banner_array['imageprior'];
                                                 $ret .= "\" />
                                             </div><!--bimagehide-->
