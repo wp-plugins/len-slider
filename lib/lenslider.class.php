@@ -27,7 +27,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '2.0.5';
+    static $version                = '2.0.6';
     static $bannersOption          = 'lenslider_banners';
     static $settingsTitle          = 'settings';
     static $bannerWidthName        = 'ls_banner_width';
@@ -2705,7 +2705,7 @@ class LenSlider {
                                                         $ret .= "\"";
                                                         if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " disabled=\"disabled\"";
                                                         $ret .= " /><input type=\"hidden\" class=\"ls_hidden\"";
-                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || empty($banner_array['bannertype'])) $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
+                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " id=\"ls-bimg-width-{$n}\" name=\"binfo[{$slidernum}][bannerwidth][]\"";
                                                         $ret .= " value=\"";
                                                         if(!empty($banner_array['bannerwidth'])) $ret .= $banner_array['bannerwidth'];
                                                         $ret .= "\" />
@@ -2723,7 +2723,7 @@ class LenSlider {
                                                         $ret .= " style=\"width:100%\" value=\"";$ret .= (!empty($banner_array['bannerheight']))?$banner_array['bannerheight']:$this->bannerHeight;$ret .= "\"";
                                                         if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " disabled=\"disabled\"";
                                                         $ret .= " /><input type=\"hidden\" class=\"ls_hidden\"";
-                                                        if((!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') || empty($banner_array['bannertype'])) $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
+                                                        if(!empty($banner_array['bannertype']) && $banner_array['bannertype'] == 'image') $ret .= " id=\"ls-bimg-height-{$n}\" name=\"binfo[{$slidernum}][bannerheight][]\"";
                                                         $ret .= " value=\"";
                                                         if(!empty($banner_array['bannerheight'])) $ret .= $banner_array['bannerheight'];
                                                         $ret .= "\" />

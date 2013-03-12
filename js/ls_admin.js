@@ -133,17 +133,16 @@
                         var $this = jQuery(this),
                         $sn        = $this.attr('id').replace(/ls_media_upload_/, '').split('_'),
                         $slidernum = $sn[0],
-                        $n         = $sn[1],
+                        $n         = parseInt($sn[1]),
                         $width     = parseInt(jQuery("#ls-bimg-width-"+$n).val()),
                         $height    = parseInt(jQuery("#ls-bimg-height-"+$n).val()),
                         $prior     = jQuery("#imageprior_"+$n).val(),
                         $type      = jQuery("#bannertype_"+$n).val(),
                         $title     = jQuery("#ls-bimg-title-"+$n).val(),
-                        $exist_id  = $sn[2];
+                        $exist_id  = parseInt($sn[2]);
                         event.preventDefault();
                         if (typeof(custom_file_frame)!=="undefined") {
-                            custom_file_frame.open();
-                            return;
+                            custom_file_frame.close();
                         }
                         
                         if(($prior == 'width' && $width > 0) || ($prior == 'height' && $height > 0)) {
