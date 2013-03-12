@@ -49,6 +49,13 @@
                     return false;
                 });
             }
+            jQuery(".add_new_slider").click(function() {
+                var $skin_name = jQuery("#new_slider_skin option:selected").val(),
+                $id            = jQuery(this).attr('id'),
+                $href          = jQuery(this).attr('href');
+                if($id) $href  = $href+"&slidernum="+$id;
+                jQuery(this).attr('href', $href+"&skin="+$skin_name);
+            });
             if(jQuery(".ls_del_sys_umeta").length) {
                 jQuery(".ls_del_sys_umeta").click(function() {
                     jQuery.post(ajaxurl,
@@ -126,17 +133,16 @@
                         var $this = jQuery(this),
                         $sn        = $this.attr('id').replace(/ls_media_upload_/, '').split('_'),
                         $slidernum = $sn[0],
-                        $n         = $sn[1],
+                        $n         = parseInt($sn[1]),
                         $width     = parseInt(jQuery("#ls-bimg-width-"+$n).val()),
                         $height    = parseInt(jQuery("#ls-bimg-height-"+$n).val()),
                         $prior     = jQuery("#imageprior_"+$n).val(),
                         $type      = jQuery("#bannertype_"+$n).val(),
                         $title     = jQuery("#ls-bimg-title-"+$n).val(),
-                        $exist_id  = $sn[2];
+                        $exist_id  = parseInt($sn[2]);
                         event.preventDefault();
                         if (typeof(custom_file_frame)!=="undefined") {
-                            custom_file_frame.open();
-                            return;
+                            custom_file_frame.close();
                         }
                         
                         if(($prior == 'width' && $width > 0) || ($prior == 'height' && $height > 0)) {
@@ -176,7 +182,7 @@
                                                         $height_val     = (!isNaN($height_val))?$height_val:'';
                                                         jQuery("#ls-bimg-width-"+$n).removeAttr('id').removeAttr('name').attr('disabled','disabled').next(".ls_hidden").attr({name:$width_name,id:'ls-bimg-width-'+$n}).val($width_val);
                                                         jQuery("#ls-bimg-height-"+$n).removeAttr('id').removeAttr('name').attr('disabled','disabled').next(".ls_hidden").attr({name:$height_name,id:'ls-bimg-height-'+$n}).val($height_val);
-                                                    } else console.dir('dddd');
+                                                    }
                                                 }, "json"
                                             );
                                             break;
@@ -561,7 +567,7 @@
                 jQuery.post(ajaxurl,
                     {action:'ls_welcome_panel',ls_welcomepanelnonce:jQuery('#ls_welcomepanelnonce').val()},
                     function(data) {
-                        if(data == 1) jQuery("#ls-welcome-panel").hide();
+                        if(data == 1 || data == '-1') jQuery("#ls-welcome-panel").hide();
                     }
                 );
                 return false;
@@ -600,14 +606,6 @@
                     jQuery("#ls_autoplay_delay_"+$slidernum).spinner("destroy");
                 }
             }
-        });
-        
-        jQuery(".add_new_slider").click(function() {
-            var $skin_name = jQuery("select[name=new_slider_skin] option:selected").val(),
-            $id            = jQuery(this).attr('id'),
-            $href          = jQuery(this).attr('href');
-            if($id) $href  = $href+"&slidernum="+$id;
-            jQuery(this).attr('href', $href+"&skin="+$skin_name);
         });
 
         jQuery(".ls_banner_close").hover(
