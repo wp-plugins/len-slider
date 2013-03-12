@@ -199,8 +199,8 @@
                     var $this = jQuery(this),
                     $split = $this.attr('id').replace(/ls_textonly_/, '').split("_"),
                     $slidernum = $split[0],
-                    $n         = $split[1],
-                    $att_id    = $split[2],
+                    $n         = parseInt($split[1]),
+                    $exist_id  = parseInt($split[2]),
                     $type      = jQuery("#bannertype_"+$n).val();
                     jQuery(".ls_media_abs_"+$slidernum+"_"+$n).show();
                     if(!$this.hasClass('act')) {
@@ -221,16 +221,16 @@
                     } else {
                         setTimeout(function () {
                             jQuery.post(ajaxurl,
-                                {type:$type,slidernum:$slidernum,insert:0,att_id:$att_id,sec:inparr.ajaxNonce,action:'ls_ajax_new_media'},
+                                {type:$type,slidernum:$slidernum,insert:0,exist_id:$exist_id,sec:inparr.ajaxNonce,action:'ls_ajax_new_media'},
                                 function(data) {
                                     jQuery(".ls_media_abs_"+$slidernum+"_"+$n).hide();
-                                    if(data.res) {
+                                    //if(data.res) {
                                         jQuery(".limman_"+$n+" a").removeClass('lmdis');
                                         $this.removeClass('act');
                                         jQuery("#ls_image_mu_"+$slidernum+"_"+$n).val('');
                                         $this.attr({id:'ls_textonly_'+$slidernum+'_'+$n+'_0'});
                                         jQuery("#ls_image_mu_"+$slidernum+"_"+$n).val('');
-                                    }
+                                    //}
                                 }, "json"
                             );
                         }, 300);

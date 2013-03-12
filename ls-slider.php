@@ -22,7 +22,7 @@ function lenslider_slider_page() {
         $title          = sprintf(__('Edit Slider #%s', 'len-sliders'), $slidernum);
         $new_slider     = false;
         $skins_disabled = false;
-        $settings_array = LenSlider::lenslider_get_slider_settings($slidernum);
+        $settings_array = LenSlider::lenslider_get_slider_settings($slidernum);//die(var_dump($settings_array));
         if(empty($settings_array[LenSlider::$sliderDisenName])) $title .= "&nbsp;&nbsp;<span style=\"color:red\">(".__('Disabled', 'lenslider').")</span>";
         $skin_check     = $settings_array[LenSlider::$skinName];
     }
@@ -125,8 +125,8 @@ function lenslider_slider_page() {
                                         </div>
                                         <div class="misc-pub-section">
                                             <select class="ls_switch" name="slset[<?php echo $slidernum;?>][<?php echo LenSlider::$sliderDisenName;?>]">
-                                                <option value="1"<?php (array_key_exists(LenSlider::$sliderDisenName, $settings_array) && !empty($settings_array[LenSlider::$sliderDisenName]))?selected($settings_array[LenSlider::$sliderDisenName], 1):"";?>><?php _e('Enabled', 'lenslider');?></option>
-                                                <option value="0"<?php (array_key_exists(LenSlider::$sliderDisenName, $settings_array) && !empty($settings_array[LenSlider::$sliderDisenName]))?selected($settings_array[LenSlider::$sliderDisenName], 0):"";?>><?php _e('Disabled', 'lenslider');?></option>
+                                                <option value="1" <?php (array_key_exists(LenSlider::$sliderDisenName, $settings_array) && !empty($settings_array[LenSlider::$sliderDisenName]))?selected($settings_array[LenSlider::$sliderDisenName], 1):"";?>><?php _e('Enabled', 'lenslider');?></option>
+                                                <option value="0" <?php (array_key_exists(LenSlider::$sliderDisenName, $settings_array))?selected($settings_array[LenSlider::$sliderDisenName], 0):"";?>><?php _e('Disabled', 'lenslider');?></option>
                                             </select>
                                         </div>
                                         <div class="misc-pub-section" style="background:#c5ffb8">

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AYEX4
 Tags: slider, carousel, slideshow, banners, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 2.0.6
+Stable tag: 2.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,8 @@ LenSlider is a skins based slider/carousel/slideshow plugin with jQuery/CSS3 eff
 LenSlider is a WordPress plugin for creation of visual sliders, carousels or slideshows for your site without writing any code. All sliders based on LenSlider skins, and skins have effects based on jQuery and CSS3. Use a shortcode in your posts/pages or static php-code in your template files to integrate any slider you made.
 
 = LenSlider Needs Your Support. Help to keep it updated =
+* If you found a bug, you are welcomed to submit it to a special [**bug report form**](http://www.lenslider.com/report-bug/)
+* If you have feature idea for a plugin, feel free to [**submit it**](http://www.lenslider.com/suggest-idea/)!
 * If you like this plugin, [**Please Leave A Rating here**](http://wordpress.org/support/view/plugin-reviews/len-slider "WordPress LenSlider Rating").  Also, click "**Works**" (over to the right) if you are satisfied with the plugin.
 * If you find this plugin useful to you, please consider [**making a small donation**](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AYEX4C4M5YMWL&lc=US&item_name=LenSlider%20Wordpress%20Plugin&amount=3%2e00&currency_code=USD&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted) to help contribute to my time invested and to further development. **Because it is hard to continue development and support for this free plugin** without contributions from users like you. Your donation will help encourage and support the plugin's continued development and better user support.
 
