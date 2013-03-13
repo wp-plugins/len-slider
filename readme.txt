@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AYEX4
 Tags: slider, carousel, slideshow, banners, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 2.0.7
+Stable tag: 2.0.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,9 @@ If you switch on this option hints in the admin LenSlider will be shown in nice 
 == Changelog ==
 
 Full list of changes you can see at [LenSlider roadmap page](http://www.lenslider.com/roadmap/)
+
+= 2.0.8 =
+= a lot of fixes for Firefox
 
 = 2.0.1 =
 - Fix for settings page

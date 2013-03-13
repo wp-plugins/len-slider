@@ -129,7 +129,7 @@
                 //new WP
                 if(inparr.wp_version >= 3.5) {
                     var custom_file_frame;
-                    jQuery(document).on('click', '.ls_media_upload', function() {
+                    jQuery(document).on('click', '.ls_media_upload', function(event) {
                         var $this = jQuery(this),
                         $sn        = $this.attr('id').replace(/ls_media_upload_/, '').split('_'),
                         $slidernum = $sn[0],
@@ -832,7 +832,8 @@
                 function(data) {
                     if(count_enabled < data.banners_limit && data.banner_item != false) {
                         if(removeEl) removeEl.removeClass("bload");
-                        jQuery('#slidernum_'+slidernum).append(jQuery(data.banner_item).fadeIn('slow'));
+                        //jQuery('#slidernum_'+slidernum).append(jQuery(data.banner_item).show('slow'));
+                        jQuery('#slidernum_'+slidernum).append(data.banner_item);
                         var $tars = jQuery(data.banner_item).find('textarea:not(.ls_nmce)');
                         if($tars.length) {
                             $tars.each(function() {
