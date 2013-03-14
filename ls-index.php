@@ -4,7 +4,7 @@ Plugin Name: LenSlider
 Plugin URI: http://www.lenslider.com/
 Description: This plugin allows you easy to generate multiple visual sliders as well as easy to integrate them into any place of your site via slider php-code or shortcode (plugin timyMCE button). A lot of plugin slider skins will help you to visualize your slider.
 Author: Igor Sazonov
-Version: 2.0.8
+Version: 2.0.9
 Author URI: http://www.lenslider.com/about-author/
 License: GPLv2
 
@@ -24,14 +24,14 @@ Copyright 2013  Igor Sazonov  (email : sovletig@yandex.ru)
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-include_once(dirname(__FILE__).'/lib/lenslider.class.php');
-include_once(dirname(__FILE__).'/lib/lenslider.settings.class.php');
-include_once(dirname(__FILE__).'/lib/lenslider.skins.class.php');
-include_once(dirname(__FILE__).'/lib/lenslider.table.class.php');
-include_once(dirname(__FILE__).'/lib/lenslider.widget.class.php');
-include_once(dirname(__FILE__).'/ls-settings.php');
-include_once(dirname(__FILE__).'/ls-skins.php');
-include_once(dirname(__FILE__).'/ls-slider.php');
+include_once(plugin_dir_path(__FILE__).'/lib/lenslider.class.php');
+include_once(plugin_dir_path(__FILE__).'/lib/lenslider.settings.class.php');
+include_once(plugin_dir_path(__FILE__).'/lib/lenslider.skins.class.php');
+include_once(plugin_dir_path(__FILE__).'/lib/lenslider.table.class.php');
+include_once(plugin_dir_path(__FILE__).'/lib/lenslider.widget.class.php');
+include_once(plugin_dir_path(__FILE__).'/ls-settings.php');
+include_once(plugin_dir_path(__FILE__).'/ls-skins.php');
+include_once(plugin_dir_path(__FILE__).'/ls-slider.php');
 
 $ls          = new LenSlider();
 function lenslider_index_gallery() {

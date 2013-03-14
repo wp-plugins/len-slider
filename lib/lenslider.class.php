@@ -27,7 +27,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '2.0.8';
+    static $version                = '2.0.9';
     static $bannersOption          = 'lenslider_banners';
     static $settingsTitle          = 'settings';
     static $bannerWidthName        = 'ls_banner_width';
@@ -57,7 +57,7 @@ class LenSlider {
     static $cacheName              = 'ls_cache';
     static $defaultSkin            = 'default';
     static $siteurl;
-    static $toJSVars;
+    static $now_wp_ver;
     static $toReplaceUrl           = '{lssiteurl}';
 
     public $requestSliderURI;
@@ -124,6 +124,7 @@ class LenSlider {
         $this->_settingsDefault        = self::lenslider_get_default_settings();
         
         self::$siteurl                 = site_url();
+        self::$now_wp_ver              = self::lenslider_get_wp_version();
         $this->requestIndexURI         = admin_url("admin.php?page=".self::$indexPage);
         $this->indexFile               = ABSPATH.PLUGINDIR."/".self::$indexPage;
         $this->requestSliderURI        = admin_url("admin.php?page=".self::$sliderPage);
@@ -237,14 +238,13 @@ class LenSlider {
 
     public function lenslider_admin_scripts_init() {
         if($this->_lenslider_is_plugin_page()) {
-            $current_wp_ver = self::lenslider_get_wp_version();
             foreach (self::$_requiredAdminJSHandles as $hndl) {
                 if($hndl == 'media-upload') {
-                    if(function_exists('wp_enqueue_media') && version_compare($current_wp_ver, 3.5, ">=")) wp_enqueue_media();
+                    if(function_exists('wp_enqueue_media') && version_compare(self::$now_wp_ver, 3.5, ">=")) wp_enqueue_media();
                     wp_enqueue_script($hndl);
                     continue;
                 }
-                if($hndl == 'jquery-ui-spinner' && version_compare($current_wp_ver, 3.5, '<')) {
+                if($hndl == 'jquery-ui-spinner' && version_compare(self::$now_wp_ver, 3.5, '<')) {
                     wp_deregister_script($hndl);
                     wp_register_script($hndl, plugins_url("js/ui19/".str_ireplace("-", ".", $hndl).".min.js", $this->indexFile));
                 }
@@ -511,10 +511,9 @@ class LenSlider {
 
     public function lenslider_make_skins_files_wp_head() {
         if(!empty($this->_enabledSliders) && is_array($this->_enabledSliders)) {
-            $cur_wp_ver = self::lenslider_get_wp_version();
             $i=0;
             foreach (self::$_requiredJSHandles as $hndl) {
-                if(version_compare($cur_wp_ver, 3.5, '<')) {
+                if(version_compare(self::$now_wp_ver, '3.5', '<')) {
                     if($i==0) {
                         foreach(self::$_wp35_deregister as $wp35_hndl) {
                             wp_deregister_script($wp35_hndl);
@@ -553,7 +552,7 @@ class LenSlider {
             }
             wp_register_script('default-skin-custom', plugins_url('js/default-skin-custom.js', $this->indexFile), self::$_requiredJSHandles, self::$version, true);
             wp_enqueue_script('default-skin-custom');
-            if(version_compare($cur_wp_ver, 3.5, '>=')) {
+            if(version_compare(self::$now_wp_ver, 3.5, '>=')) {
                 wp_register_script('jquery-ui-tabs-rotate', plugins_url('js/jquery-ui-tabs-rotate.js', $this->indexFile), self::$_requiredJSHandles);
                 wp_enqueue_script('jquery-ui-tabs-rotate');
             }
@@ -682,7 +681,7 @@ class LenSlider {
                 'confirmText' => __('Are you sure?', 'lenslider'),
                 'skinSettingsConfirmStr' => __("Do you want to set skin settings for the slider?", 'lenslider'),
                 'ajaxNonce' => wp_create_nonce($this->plugin_basename.LOGGED_IN_KEY.site_url()),
-                'wp_version' => self::lenslider_get_wp_version(),
+                'wp_version_new' => (version_compare(self::lenslider_get_wp_version(), '3.5', '>='))?1:0,
                 'user_id' => get_current_user_id(),
                 'wp_uploader_title' => __('LenSlider Media Manager', 'lenslider'),
                 'wp_uploader_button' => __('Select', 'lenslider')
@@ -1002,7 +1001,7 @@ class LenSlider {
             $fatal = false;
             $r = '';
             $now_wp_ver = self::lenslider_get_wp_version();
-            if(version_compare(floatval(phpversion()), 5.2, '<')) {
+            if(version_compare(floatval(phpversion()), '5.2', '<')) {
                 $arr['phpver'] = floatval(phpversion());
                 $ret = false;
                 $fatal = true;
@@ -1069,7 +1068,7 @@ class LenSlider {
     
     public static function lenslider_get_wp_version() {
         global $wp_version;
-        return floatval($wp_version);
+        return $wp_version;
     }
     
     public static function lenslider_get_default_settings() {
@@ -1598,18 +1597,18 @@ class LenSlider {
         self::_lenslider_is_ajax();
         check_ajax_referer($this->plugin_basename.LOGGED_IN_KEY.self::$siteurl, 'sec');
         $ret_array = array();
-        $type       = trim(stripcslashes($_POST['type']));
+        $type      = trim(stripcslashes($_POST['type']));
         if($type) {
             switch ($type) {
                 case 'image':
-                    $id         = intval($_POST['added_id']);
-                    $slidernum  = trim(stripcslashes($_POST['slidernum']));
-                    $width      = intval($_POST['width']);
-                    $height     = intval($_POST['height']);
-                    $title      = (!empty($_POST['title']))?$_POST['title']:"";
-                    $prior      = trim(stripcslashes($_POST['prior']));
-                    $exist_id   = intval($_POST['exist_id']);
-                    $ret_array['res'] = false;
+                    $id                = intval($_POST['added_id']);
+                    $slidernum         = trim(stripcslashes($_POST['slidernum']));
+                    $width             = intval($_POST['width']);
+                    $height            = intval($_POST['height']);
+                    $title             = (!empty($_POST['title']))?$_POST['title']:"";
+                    $prior             = trim(stripcslashes($_POST['prior']));
+                    $exist_id          = intval($_POST['exist_id']);
+                    $ret_array['res']  = false;
                     $maked_attachment  = $this->lenslider_resize_image_library($id, $title, $width, $height, $prior, $exist_id, $slidernum);
                     $ret_array['id']   = $maked_attachment['id'];
                     $ret_array['path'] = $maked_attachment['path'];
@@ -1663,7 +1662,7 @@ class LenSlider {
     public function lenslider_ajax_delete_banner() {
         self::_lenslider_is_ajax();
         check_ajax_referer($this->plugin_basename.LOGGED_IN_KEY.self::$siteurl, 'sec');
-        $ret_array = array();
+        $ret_array        = array();
         $id               = intval($_POST['att_id']);
         $thumb_id         = intval($_POST['thumb_id']);
         $slidernum        = trim(stripcslashes($_POST['slidernum']));
@@ -1674,10 +1673,11 @@ class LenSlider {
     public function lenslider_ajax_delete_attachment() {
         self::_lenslider_is_ajax();
         check_ajax_referer($this->plugin_basename.LOGGED_IN_KEY.self::$siteurl, 'sec');
-        $ret_array = array();
+        $ret_array        = array();
         $id               = intval($_POST['att_id']);
         $slidernum        = trim(stripcslashes($_POST['slidernum']));
         $ret_array['res'] = $this->lenslider_delete_banner($id, $slidernum);
+        die(json_encode($ret_array));
     }
 
     public function lenslider_ajax_delete_thumb() {
@@ -1714,10 +1714,10 @@ class LenSlider {
     public function lenslider_ajax_new_thumb() {
         self::_lenslider_is_ajax();
         check_ajax_referer($this->plugin_basename.LOGGED_IN_KEY.self::$siteurl, 'sec');
-        $ret_array = array();
-        $id        = intval($_POST['added_id']);
-        $slidernum = trim(stripcslashes($_POST['slidernum']));
-        $width     = intval($_POST['width']);
+        $ret_array         = array();
+        $id                = intval($_POST['added_id']);
+        $slidernum         = trim(stripcslashes($_POST['slidernum']));
+        $width             = intval($_POST['width']);
         $ret_array['res']  = false;
         $maked_attachment  = $this->lenslider_resize_image_library($id, false, $width, false, 'width', 0, $slidernum);
         $ret_array['id']   = $maked_attachment['id'];

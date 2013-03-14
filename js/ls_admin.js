@@ -69,7 +69,7 @@
             
             if(jQuery(".ls_media_upload").length) {
                 //old WP
-                if(inparr.wp_version < 3.5) {
+                if(inparr.wp_version_new < 1) {
                     jQuery(document).on('click', '.ls_media_upload', function() {
                         window.old_wp_33_this = jQuery(this);
                         var $sn    = window.old_wp_33_this.attr('id').replace(/ls_media_upload_/, '').split('_');
@@ -127,7 +127,7 @@
                     });
                 }
                 //new WP
-                if(inparr.wp_version >= 3.5) {
+                if(inparr.wp_version_new == 1) {
                     var custom_file_frame;
                     jQuery(document).on('click', '.ls_media_upload', function(event) {
                         var $this = jQuery(this),
@@ -309,19 +309,21 @@
                             $slidernum    = $arr[0],
                             $n            = $arr[1],
                             $att_id       = $arr[2],
-                            $att_thumb_id = jQuery("#ls_image_thumb_mu_"+$slidernum+"_"+$n).val(),
                             $type         = jQuery("#bannertype_"+$n).val(),
                             $width_name   = '',
                             $width_val    = '',
                             $height_name  = '',
                             $height_val   = '',
-                            $url_name     = '';
+                            $url_name     = '';console.dir($arr);
+                            if(jQuery("#ls_image_thumb_mu_"+$slidernum+"_"+$n).length) {
+                                var $att_thumb_id = jQuery("#ls_image_thumb_mu_"+$slidernum+"_"+$n).val();
+                            }
                             jQuery(".ls_media_abs_"+$slidernum+"_"+$n).show();
                             setTimeout(function () {
                                 jQuery.post(ajaxurl,
                                     {att_id:$att_id,thumb_id:$att_thumb_id,slidernum:$slidernum,n:$n,sec:inparr.ajaxNonce,action:'ls_ajax_delete_attachment'},
                                     function(data) {
-                                        jQuery(".ls_media_abs_"+$slidernum+"_"+$n).hide();
+                                        jQuery(".ls_media_abs_"+$slidernum+"_"+$n).hide();console.dir(data);
                                         switch($type) {
                                             case 'image':
                                                 if(data.res) {
@@ -403,7 +405,7 @@
             
             if(jQuery(".ls_media_thumb_upload").length) {
                 //old WP
-                if(inparr.wp_version < 3.5) {
+                if(inparr.wp_version_new < 1) {
                     jQuery(document).on('click', '.ls_media_thumb_upload', function() {
                         window.old_wp_33_this = jQuery(this);
                         var $sn    = window.old_wp_33_this.attr('id').replace(/ls_media_upload_/, '').split('_');
@@ -461,7 +463,7 @@
                     }
                 }
                 //new WP
-                if(inparr.wp_version >= 3.5) {
+                if(inparr.wp_version_new == 1) {
                     var custom_thumb_file_frame;
                     jQuery(document).on('click', '.ls_media_thumb_upload', function() {
                         var $this = jQuery(this),

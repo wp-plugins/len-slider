@@ -1,10 +1,10 @@
 === Len Slider ===
 Contributors: tigusigalpa
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AYEX4C4M5YMWL&lc=US&item_name=LenSlider%20Wordpress%20Plugin&amount=3%2e00&currency_code=USD&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
-Tags: slider, carousel, slideshow, banners, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css
+Tags: slider, carousel, slideshow, banners, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, Photo Slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, css, youtube, vimeo, video, widget, skinnable
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 2.0.8
+Stable tag: 2.0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
