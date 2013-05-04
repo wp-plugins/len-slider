@@ -27,7 +27,7 @@ class LenSlider {
     
     static $defaultSkinWidth       = 936;
 
-    static $version                = '2.0.9';
+    static $version                = '2.0.11';
     static $bannersOption          = 'lenslider_banners';
     static $settingsTitle          = 'settings';
     static $bannerWidthName        = 'ls_banner_width';
@@ -550,11 +550,13 @@ class LenSlider {
                 }
                 wp_enqueue_script($hndl);
             }
-            wp_register_script('default-skin-custom', plugins_url('js/default-skin-custom.js', $this->indexFile), self::$_requiredJSHandles, self::$version, true);
-            wp_enqueue_script('default-skin-custom');
+            wp_register_script('lenslider-default-skin', plugins_url('js/default.skin.js', $this->indexFile), self::$_requiredJSHandles, self::$version, true);
+            wp_enqueue_script('lenslider-default-skin');
             if(version_compare(self::$now_wp_ver, 3.5, '>=')) {
                 wp_register_script('jquery-ui-tabs-rotate', plugins_url('js/jquery-ui-tabs-rotate.js', $this->indexFile), self::$_requiredJSHandles);
                 wp_enqueue_script('jquery-ui-tabs-rotate');
+                wp_register_script('jquery-ui-tabs-hover',  plugins_url('js/jquery-ui-tabs-hover.js',  $this->indexFile), self::$_requiredJSHandles);
+                wp_enqueue_script('jquery-ui-tabs-hover');
             }
             $enabled_skins_data = $this->_lenslider_get_enabled_sliders_data();
             if(!empty($enabled_skins_data['skins']) && is_array($enabled_skins_data['skins'])) {
@@ -1006,6 +1008,10 @@ class LenSlider {
                 $ret = false;
                 $fatal = true;
             }
+            if(version_compare(floatval(phpversion()), '5.4', '>=')) {
+                $arr['phpver54'] = floatval(phpversion());
+                $ret = false;
+            }
             if(!extension_loaded('gd') && !function_exists('gd_info')) {
                 $arr['gd'] = true;
                 $ret = false;
@@ -1017,6 +1023,11 @@ class LenSlider {
             }
             if(!function_exists('glob')) {
                 $arr['glob'] = true;
+                $ret = false;
+                $fatal = true;
+            }
+            if(!function_exists('simplexml_load_file')) {
+                $arr['sxml'] = true;
                 $ret = false;
                 $fatal = true;
             }
@@ -1034,12 +1045,14 @@ class LenSlider {
                 $ret_echo .= "<strong>";
                 $ret_echo .= ($fatal)?__("LenSlider can't works fine with your PHP settings", 'lenslider'):__("Some <u>not fatal</u> errors found", 'lenslider');
                 $ret_echo .= ":</strong><br />";
-                if(array_key_exists('phpver', $arr)  && !empty($arr['phpver']))  $ret_echo_arr[] = sprintf(__("Your php version is <strong>%s</strong>. You need <strong>PHP 5.2+ version</strong> for stable plugin work, so you need to install/update the one for stable work.", 'lenslider'), $arr['phpver']);
-                if(array_key_exists('gd', $arr)      && !empty($arr['gd']))      $ret_echo_arr[] = __("PHP GD library is not installed on your web server! You need to install it.", 'lenslider');
-                if(array_key_exists('ziparc', $arr)  && !empty($arr['ziparc']))  $ret_echo_arr[] = __("ZipClass class not exists. So you can't upload skins zip-archives. You need update your PHP version to 5.2+ version or add ZipArchive class manually.", 'lenslider');
-                if(array_key_exists('glob', $arr)    && !empty($arr['glob']))    $ret_echo_arr[] = __("PHP function <a href=\"http://php.net/manual/en/function.glob.php\" target=\"_blank\">glob()</a> not exists. It's bad: you'll not has access for skins against <strong>default</strong>. There are much reasons for it, google the problem.", 'lenslider');
-                if(array_key_exists('wpver', $arr)   && !empty($arr['wpver']))   $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>. Recommended is <strong>WordPress 3.5</strong> version for right output sliders, but it's <strong>not fatal</strong> if all works fine for you. <strong>LenSlider2</strong> has 3.5 less compatibility, but it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
-                if(array_key_exists('wpver33', $arr) && !empty($arr['wpver33'])) $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>, it's even less than <strong>WordpPess 3.3</strong>. Recommended is <strong>WordPress 3.5</strong> or <strong>3.3+</strong> version for right output sliders, your WordPress version is too old and <strong>this is fatal</strong>, so it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
+                if(array_key_exists('phpver', $arr)   && !empty($arr['phpver']))   $ret_echo_arr[] = sprintf(__("Your php version is <strong>%s</strong>. You need <strong>PHP 5.2+ version</strong> for stable plugin work, so you need to install/update the one for stable work.", 'lenslider'), $arr['phpver']);
+                if(array_key_exists('phpver54', $arr) && !empty($arr['phpver54'])) $ret_echo_arr[] = sprintf(__("Your php version is <strong>%s</strong>. This version of PHP is untested yet about stable work.", 'lenslider'), $arr['phpver54']);
+                if(array_key_exists('gd', $arr)       && !empty($arr['gd']))       $ret_echo_arr[] = __("PHP GD library is not installed on your web server! You need to install it.", 'lenslider');
+                if(array_key_exists('ziparc', $arr)   && !empty($arr['ziparc']))   $ret_echo_arr[] = __("ZipClass class not exists. So you can't upload skins zip-archives. You need update your PHP version to 5.2+ version or add ZipArchive class manually.", 'lenslider');
+                if(array_key_exists('glob', $arr)     && !empty($arr['glob']))     $ret_echo_arr[] = __("PHP function <a href=\"http://php.net/manual/en/function.glob.php\" target=\"_blank\">glob()</a> not exists. It's bad: you'll not has access for skins against <strong>default</strong>. There are much reasons for it, google the problem.", 'lenslider');
+                if(array_key_exists('sxml', $arr)     && !empty($arr['sxml']))     $ret_echo_arr[] = __("PHP function <a href=\"http://php.net/manual/en/function.simplexml-load-file.php\" target=\"_blank\">simplexml_load_file()</a> not exists. It's bad: you'll not has access for skins against <strong>default</strong>. There are much reasons for it, google the problem.", 'lenslider');
+                if(array_key_exists('wpver', $arr)    && !empty($arr['wpver']))    $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>. Recommended is <strong>WordPress 3.5</strong> version for right output sliders, but it's <strong>not fatal</strong> if all works fine for you. <strong>LenSlider2</strong> has 3.5 less compatibility, but it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
+                if(array_key_exists('wpver33', $arr)  && !empty($arr['wpver33']))  $ret_echo_arr[] = sprintf(__("Your WordPress version is <strong>%s</strong>, it's even less than <strong>WordpPess 3.3</strong>. Recommended is <strong>WordPress 3.5</strong> or <strong>3.3+</strong> version for right output sliders, your WordPress version is too old and <strong>this is fatal</strong>, so it's <strong>no guarantee</strong> for sliders output fine work or some js-scripts based on old jQuery UI < 1.9 fine work.", 'lenslider'), $now_wp_ver);
                 if(!empty($ret_echo) && !empty($ret_echo_arr) && is_array($ret_echo_arr)) {
                     $r = $ret_echo."<ul>";
                     foreach ($ret_echo_arr as $s) {
@@ -1129,7 +1142,7 @@ class LenSlider {
             $i=0;
             $enabled_count = 0;
             foreach ($sliders_array[$slidernum] as $k=>$banner_v) {
-                if(array_key_exists($i, $settings_array[self::$bannerDisenName])) {
+                if(!empty($settings_array[self::$bannerDisenName]) && is_array($settings_array[self::$bannerDisenName]) && array_key_exists($i, $settings_array[self::$bannerDisenName])) {
                     if($array_values) $ret_array[$i] = $banner_v;
                     else $ret_array[$k] = $banner_v;
                     $enabled_count++;

@@ -4,7 +4,7 @@ Plugin Name: LenSlider
 Plugin URI: http://www.lenslider.com/
 Description: This plugin allows you easy to generate multiple visual sliders as well as easy to integrate them into any place of your site via slider php-code or shortcode (plugin timyMCE button). A lot of plugin slider skins will help you to visualize your slider.
 Author: Igor Sazonov
-Version: 2.0.9
+Version: 2.0.11
 Author URI: http://www.lenslider.com/about-author/
 License: GPLv2
 
@@ -33,7 +33,7 @@ include_once(plugin_dir_path(__FILE__).'/ls-settings.php');
 include_once(plugin_dir_path(__FILE__).'/ls-skins.php');
 include_once(plugin_dir_path(__FILE__).'/ls-slider.php');
 
-$ls          = new LenSlider();
+$ls = new LenSlider();
 function lenslider_index_gallery() {
     if(!is_user_logged_in() || !current_user_can(LenSlider::$capability)) die('-1');
     global $ls;
@@ -81,7 +81,7 @@ function lenslider_index_gallery() {
                 <h3>Hi everyone!</h3>
                 <p class="about-description">LenSlider needs your help. Because its difficult to make FREE plugin <strong style="color:#000">by one person</strong>: idea, programming, HTML, design, site, testing, users support and so on. And then if bug/problem founded by some WP users that create WP sites for money, they can write a negative review for FREE plugin. One of this review You can see on WordPress.org plugin page.</p>
                 <p class="about-description">The plugin is really perspective, but needs feature ideas, time, examples, bugs/problems report and also donations. I do not want to turn into a beggar, but I think that <strong style="color:#000">a common cause people can <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AYEX4C4M5YMWL&lc=US&item_name=LenSlider%20Wordpress%20Plugin&amount=3%2e00&currency_code=USD&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted" target="_blank">leave a small donation</a> to keep the plugin free.</strong></p>
-                <p class="about-description">Thanks for understanding!</p>
+                <p class="about-description">Thanks for understanding! <a href="http://www.lenslider.com/contributors-list/" target="_blank">Contributors list</a></p>
             </div>
         </div>
         <?php endif;?>
