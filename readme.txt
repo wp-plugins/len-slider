@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AYEX4
 Tags: slider, carousel, slideshow, banners, wordpress slider, image slider, image slider plugin, javascript rotator, javascript slider, jquery rotator, photo rotator, photo slider, picture slider, rotator, shortcode, slider plugin, slideshow plugin, slider shortcode, carousel plugin, thumbnails, css3, youtube, vimeo, video, widget, skinnable
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 2.0.9
+Stable tag: 2.0.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,7 +42,6 @@ LenSlider2 has been considerably enhanced with regard to users opinions and plan
 * Disable for banners
 * WordPress 3.5+ READY!
 * YouTube & Vimeo support!
-
 * Easy creation and management of sliders within the WordPress admin
 * Skins based sliders
 * Fast: The plugin doesn’t use any additional MySQL database table. It uses just one query + WordPress Cache support
@@ -71,9 +70,9 @@ or by Shortcode button:
 
 **Credits**
 
-* Uses [jQuery Cookie plugin](https://github.com/carhartl/jquery-cookie)
 * Uses [jQuery mTip plugin](http://dev.mauvm.nl/mTip/)
 * Uses [jQuery UI Tabs Rotate for jQuery UI 1.9+](https://github.com/cmcculloh/jQuery-UI-Tabs-Rotate)
+* Uses [jQuery UI Tabs Rotate: Pause on Hover for jQuery UI 1.9+](https://github.com/tigusigalpa/jQuery-UI-tabs-Rotate-Pause-on-hover)
 * Uses [jQuery UI Toggle Switch](http://taitems.github.com/UX-Lab/ToggleSwitch/index.html)
 * Thanks to [Andrew Gaewski](http://www.behance.net/busty_rusty) for UX admin design
 
@@ -134,8 +133,13 @@ If you switch on this option hints in the admin LenSlider will be shown in nice 
 
 Full list of changes you can see at [LenSlider roadmap page](http://www.lenslider.com/roadmap/)
 
+= 2.0.10 =
+- easing works now
+- red border/not saving sliders fix
+- pause on hover works
+
 = 2.0.8 =
-= a lot of fixes for Firefox
+- a lot of fixes for Firefox
 
 = 2.0.1 =
 - Fix for settings page

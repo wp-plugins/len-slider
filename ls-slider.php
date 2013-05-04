@@ -73,7 +73,7 @@ function lenslider_slider_page() {
                                 <h3 class="hndle ls_cd"><?php _e( 'Manage', 'lenslider' );?></h3>
                                 <div class="inside">
                                     <div class="ls_floatleft" style="margin-right:20px;"><div class="ls_load"><a id="banner_slider_<?php echo $slidernum;?>" class="button add_banner" href="javascript:;">+ <?php _e("Add new banner", 'lenslider');?></a></div></div>
-                                    <div class="ls_floatleft"><input type="submit" class="button button-primary" name="ls_update" value="<?php _e('Save', 'lenslider');?>" /></div>
+                                    <div class="ls_floatleft"><input type="submit" class="button button-primary ls-update" name="ls_update" value="<?php _e('Save', 'lenslider');?>" /></div>
                                     <div class="clear"></div>
                                 </div>
                             </div>
@@ -93,7 +93,7 @@ function lenslider_slider_page() {
                                         </div>
                                         <div class="misc-pub-section">
                                             <table border="0" width="100%"><tr>
-                                                    <td width="50%"><input type="submit" class="button button-primary" name="ls_update" value="<?php _e('Save', 'lenslider');?>" /></td>
+                                                    <td width="50%"><input type="submit" class="button button-primary  ls-update" name="ls_update" value="<?php _e('Save', 'lenslider');?>" /></td>
                                                     <td width="50%" align="right"><?php if(LenSlider::lenslider_is_slider_exists($slidernum, $sliders_array)):?><a class="submitdelete deletion ls-deletion" href="<?php echo $ls->requestIndexURI."&action=delslider&slidernum={$slidernum}&noheader=true";?>"><?php _e( 'Delete Slider', 'lenslider' );?></a><?php endif;?></td>
                                             </tr></table>
                                         </div>
